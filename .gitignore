@@ -1,0 +1,4 @@
+# Project exclude paths
+/cloud-storage-netty-client/target/
+/cloud-storage-netty-server/target/
+/common-server-client/target/
