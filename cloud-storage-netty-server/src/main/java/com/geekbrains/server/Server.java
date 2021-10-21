@@ -29,8 +29,8 @@ public class Server {
                         protected void initChannel(SocketChannel channel) {
                             channel.pipeline().addLast(
                                     new ObjectEncoder(),
-                                    new ObjectDecoder(2000000000, ClassResolvers.cacheDisabled(null))
-//                                    new FileInfoMessageHandler()
+                                    new ObjectDecoder(2000000000, ClassResolvers.cacheDisabled(null)),
+                                    new FileInfoMessageHandler()
                             );
                         }
                     });
@@ -50,7 +50,7 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        new Server()
+        new Server();
     }
 }
 

@@ -25,7 +25,7 @@ public class ChatController implements Initializable {
 
     public ListView<String> listView;
     public TextField input;
-//    private Network network;
+    private Network network;
     private List<Path> fileList;
     private String fileName;
     private long fileSize;
@@ -36,13 +36,13 @@ public class ChatController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         updateFileList(Paths.get("./files"));
-//        network = Network.getInstance();
-//        network.connect();
+        network = Network.getInstance();
+        network.connect();
         Thread readThread = new Thread(() -> {
             try {
                 while (true) {
-//                    String message = network.readMessage();
-//                    Platform.runLater(() -> putMessage(message));
+                    String message = network.readMessage();
+                    Platform.runLater(() -> putMessage(message));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -54,7 +54,7 @@ public class ChatController implements Initializable {
 
     @FXML
     public void getMessage() throws IOException {
-//        network.sendFileInfo(fileName, fileSize, bytes);
+        network.sendFileInfo(fileName, fileSize, bytes);
         input.clear();
         fis.close();
     }
