@@ -41,7 +41,7 @@ public class Network {
         try {
             Socket socket = new Socket(host, port);
             dos = new ObjectEncoderOutputStream(socket.getOutputStream());
-            dis = new ObjectDecoderInputStream(socket.getInputStream(), 2000000000);
+            dis = new ObjectDecoderInputStream(socket.getInputStream(), Integer.MAX_VALUE);
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Failed to establish connection");
