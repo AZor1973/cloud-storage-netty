@@ -35,7 +35,8 @@ public class ChatController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        updateFileList(Paths.get("./files"));
+//        updateFileList(Paths.get("./files"));
+        updateFileList(Path.of(System.getProperty("user.dir")));
         network = Network.getInstance();
         network.connect();
         Thread readThread = new Thread(() -> {

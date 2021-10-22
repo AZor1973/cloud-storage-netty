@@ -26,7 +26,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         FileUploadCommandData data = (FileUploadCommandData) msg.getData();
         String fileName = data.getFileName();
         long fileSize = data.getFileSize();
-        Path path = Path.of("./root", fileName);
+        Path path = Server.getRoot().resolve(fileName);
         if (!Files.exists(path)) {
             Files.createFile(path);
             Files.write(path, data.getBytes(), StandardOpenOption.CREATE,

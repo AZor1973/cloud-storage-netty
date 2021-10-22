@@ -17,6 +17,8 @@ import java.nio.file.Path;
 @Slf4j
 public class Server {
 
+    private static final Path root = Path.of("root");
+
     public Server() {
         EventLoopGroup auth = new NioEventLoopGroup(1);
         EventLoopGroup worker = new NioEventLoopGroup();
@@ -36,7 +38,6 @@ public class Server {
                     });
             ChannelFuture future = bootstrap.bind(8189).sync();
             log.debug("Server started...");
-            Path root = Path.of("root");
             if (!Files.exists(root)) {
                 Files.createDirectory(root);
             }
@@ -47,6 +48,10 @@ public class Server {
             auth.shutdownGracefully();
             worker.shutdownGracefully();
         }
+    }
+
+    public static Path getRoot(){
+        return root;
     }
 
     public static void main(String[] args) {
