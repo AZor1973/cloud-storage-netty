@@ -54,7 +54,7 @@ public class ChatController implements Initializable {
 
     @FXML
     public void getMessage() throws IOException {
-        network.sendFileInfo(fileName, fileSize, bytes);
+        network.sendFile(fileName, fileSize, bytes);
         input.clear();
         fis.close();
     }

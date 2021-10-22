@@ -30,7 +30,7 @@ public class Server {
                             channel.pipeline().addLast(
                                     new ObjectEncoder(),
                                     new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)),
-                                    new FileInfoMessageHandler()
+                                    new FileDownloadHandler()
                             );
                         }
                     });

@@ -1,9 +1,6 @@
 package com.geekbrains.common;
 
-import com.geekbrains.common.commands.AuthCommandData;
-import com.geekbrains.common.commands.AuthOkCommandData;
-import com.geekbrains.common.commands.ErrorCommandData;
-import com.geekbrains.common.commands.FileInfoCommandData;
+import com.geekbrains.common.commands.*;
 
 import java.io.Serial;
 import java.io.Serializable;
@@ -43,10 +40,17 @@ public class Command implements Serializable {
         return command;
     }
 
-    public static Command fileInfoCommand(String fileName, long fileSize, byte[] bytes){
+    public static Command fileUploadCommand(String fileName, long fileSize, byte[] bytes){
         Command command = new Command();
-        command.type = CommandType.FILE_INFO;
-        command.data = new FileInfoCommandData(fileName, fileSize, bytes);
+        command.type = CommandType.FILE_UPLOAD;
+        command.data = new FileUploadCommandData(fileName, fileSize, bytes);
+        return command;
+    }
+
+    public static Command infoCommand(String message){
+        Command command = new Command();
+        command.type = CommandType.INFO;
+        command.data = new InfoCommandData(message);
         return command;
     }
 }

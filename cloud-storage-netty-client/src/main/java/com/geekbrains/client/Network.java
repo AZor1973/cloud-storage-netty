@@ -3,7 +3,8 @@ package com.geekbrains.client;
 import com.geekbrains.common.Command;
 import com.geekbrains.common.CommandType;
 import com.geekbrains.common.commands.ErrorCommandData;
-import com.geekbrains.common.commands.FileInfoCommandData;
+import com.geekbrains.common.commands.FileUploadCommandData;
+import com.geekbrains.common.commands.InfoCommandData;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 import lombok.extern.slf4j.Slf4j;
@@ -48,15 +49,15 @@ public class Network {
         }
     }
 
-    public  void sendFileInfo(String fileName, long fileSize, byte[] bytes) throws IOException {
-        sendCommand(Command.fileInfoCommand(fileName, fileSize, bytes));
+    public  void sendFile(String fileName, long fileSize, byte[] bytes) throws IOException {
+        sendCommand(Command.fileUploadCommand(fileName, fileSize, bytes));
     }
 
     public String readMessage() throws IOException {
         Command command = readCommand();
-        if (command.getType() == CommandType.FILE_INFO) {
-            FileInfoCommandData data = (FileInfoCommandData) command.getData();
-            return data.getFileName() + " downloaded.";
+        if (command.getType() == CommandType.INFO) {
+            InfoCommandData data = (InfoCommandData) command.getData();
+            return data.getMessage();
         }else if (command.getType() == CommandType.ERROR){
             ErrorCommandData data = (ErrorCommandData) command.getData();
             return data.getErrorMessage();
