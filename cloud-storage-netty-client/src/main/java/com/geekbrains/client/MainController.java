@@ -9,7 +9,6 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,16 +38,20 @@ public class MainController implements Initializable {
     @FXML
     public ListView<String> clientListView;
     private Network network;
-    private List<Path> fileListClient;
-    private String uploadFileName;
-    private long uploadFileSize;
-    private Path uploadFilepath = null;
+    private List<String> fileListClient;
+    private String selectedFileName;
+    private long selectedFileSize;
+    private Path selectedFilePath;
     private FileInputStream fis;
-    private byte[] uploadFileBytes;
+    private byte[] selectedFileBytes;
+    private Path parentPath;
+    private Path currentPath;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        updateClientListView(Path.of(System.getProperty("user.dir")));
+        currentPath = Path.of(System.getProperty("user.dir"));
+        System.out.println(currentPath);
+        updateClientListView(currentPath);
         network = Network.getInstance();
         network.connect();
         Thread readThread = new Thread(() -> {
@@ -69,15 +72,11 @@ public class MainController implements Initializable {
         clientListView.getItems().clear();
         fileListClient = new ArrayList<>();
         try {
-            fileListClient.addAll(Files.list(path).map(Path::toAbsolutePath).collect(Collectors.toList()));
+            fileListClient.addAll(Files.list(path).map(p -> p.getFileName().toString()).collect(Collectors.toList()));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        List<String> list = fileListClient.stream().map(p -> p.getFileName().toString()).collect(Collectors.toList());
-        clientListView.getItems().addAll(list);
-//        for (Path path1 : fileListClient) {
-//            clientListView.getItems().add(String.valueOf(path1.getFileName()));
-//        }
+        clientListView.getItems().addAll(fileListClient);
     }
 
     public void updateServerListView(List<String> files) {
@@ -100,10 +99,22 @@ public class MainController implements Initializable {
     }
 
     private void moveToParent() {
-        Path upperPath = uploadFilepath.getParent();
-        if (upperPath != null) {
-            updateClientListView(upperPath);
+        if (selectedFilePath != null){
+            if (Files.isDirectory(selectedFilePath)){
+                parentPath = selectedFilePath.getParent();
+            }else {
+                parentPath = selectedFilePath.getParent().getParent();
+            }
+            selectedFilePath = parentPath;
+        }else {
+            parentPath = currentPath.getParent();
         }
+        if (parentPath != null) {
+            updateClientListView(parentPath);
+            currentPath = parentPath;
+        }
+        System.out.println(parentPath);
+        System.out.println(currentPath);
     }
 
     private void getFile() throws IOException {
@@ -111,23 +122,21 @@ public class MainController implements Initializable {
             fis = null;
 //            fis.close();   // does not work
         }
-        uploadFileName = clientListView.getSelectionModel().getSelectedItem();
-        for (Path value : fileListClient) {
-            if (value.getFileName().equals(Paths.get(uploadFileName))) {
-                uploadFilepath = value;
-            }
-        }
-        assert uploadFilepath != null;
-        if (Files.isDirectory(uploadFilepath)) {
-            updateClientListView(uploadFilepath);
+        selectedFileName = clientListView.getSelectionModel().getSelectedItem();
+        selectedFilePath = Path.of(String.valueOf(currentPath), selectedFileName);
+        if (Files.isDirectory(selectedFilePath)) {
+            currentPath = selectedFilePath;
+            updateClientListView(selectedFilePath);
         } else {
-            uploadFileSize = Files.size(uploadFilepath);
-            fis = new FileInputStream(String.valueOf(uploadFilepath));
-            uploadFileBytes = new byte[(int) uploadFileSize];
-            fis.read(uploadFileBytes);
-            input.setText(uploadFileName);
+            selectedFileSize = Files.size(selectedFilePath);
+            fis = new FileInputStream(String.valueOf(selectedFilePath));
+            selectedFileBytes = new byte[(int) selectedFileSize];
+            fis.read(selectedFileBytes);
+            input.setText(selectedFileName);
             input.requestFocus();
         }
+
+        System.out.println(currentPath);
     }
 
     private void putMessage(String message) {
@@ -137,12 +146,12 @@ public class MainController implements Initializable {
 
     public void upload() throws IOException {
         if (fis != null) {
-            network.sendFile(uploadFileName, uploadFileSize, uploadFileBytes);
+            network.sendFile(selectedFileName, selectedFileSize, selectedFileBytes);
             input.clear();
 //            fis.close();  // does not work
             fis = null;
-            uploadFileName = null;
-            uploadFileSize = 0;
+            selectedFileName = null;
+            selectedFileSize = 0;
             clientListView.requestFocus();
         }
     }
@@ -161,8 +170,8 @@ public class MainController implements Initializable {
                 input.clear();
 //            fis.close(); // does not work
                 fis = null;
-                uploadFileName = null;
-                uploadFileSize = 0;
+                selectedFileName = null;
+                selectedFileSize = 0;
                 clientListView.requestFocus();
             }
         } else if (keyEvent.getCode() == KeyCode.LEFT) {
