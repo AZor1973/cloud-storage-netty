@@ -1,15 +1,20 @@
 package com.geekbrains.client;
 
+import com.geekbrains.client.dialogs.Dialogs;
 import com.geekbrains.common.Command;
 import com.geekbrains.common.CommandType;
+import com.geekbrains.common.commands.AuthOkCommandData;
 import com.geekbrains.common.commands.ErrorCommandData;
-import com.geekbrains.common.commands.FileUploadCommandData;
 import com.geekbrains.common.commands.InfoCommandData;
+import com.geekbrains.common.commands.UpdateFileListCommandData;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
+import javafx.application.Platform;
 import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.net.Socket;
+import java.util.List;
 
 @Slf4j
 public class Network {
@@ -21,6 +26,7 @@ public class Network {
     private final int port;
     private ObjectDecoderInputStream dis;
     private ObjectEncoderOutputStream dos;
+    private boolean connected;
 
     public static Network getInstance() {
         if (INSTANCE == null) {
@@ -43,14 +49,19 @@ public class Network {
             Socket socket = new Socket(host, port);
             dos = new ObjectEncoderOutputStream(socket.getOutputStream());
             dis = new ObjectDecoderInputStream(socket.getInputStream(), Integer.MAX_VALUE);
+            connected = true;
         } catch (IOException e) {
             e.printStackTrace();
             System.err.println("Failed to establish connection");
         }
     }
 
-    public  void sendFile(String fileName, long fileSize, byte[] bytes) throws IOException {
-        sendCommand(Command.fileUploadCommand(fileName, fileSize, bytes));
+    public boolean isConnected() {
+        return connected;
+    }
+
+    public void sendFile(String fileName, long fileSize, byte[] bytes) throws IOException {
+        sendCommand(Command.uploadFileCommand(fileName, fileSize, bytes));
     }
 
     public String readMessage() throws IOException {
@@ -58,14 +69,30 @@ public class Network {
         if (command.getType() == CommandType.INFO) {
             InfoCommandData data = (InfoCommandData) command.getData();
             return data.getMessage();
-        }else if (command.getType() == CommandType.ERROR){
+        } else if (command.getType() == CommandType.ERROR) {
             ErrorCommandData data = (ErrorCommandData) command.getData();
-            return data.getErrorMessage();
+            String error = data.getErrorMessage();
+            if (error.trim().equals("Incorrect login or password!")){
+                Platform.runLater(Dialogs.AuthError.INVALID_CREDENTIALS::show);
+            }else if (error.trim().equals("This user is already signed in!")){
+                Platform.runLater(Dialogs.AuthError.USERNAME_BUSY::show);
+            }
+            return error;
+        } else if (command.getType() == CommandType.AUTH_OK) {
+            AuthOkCommandData data = (AuthOkCommandData) command.getData();
+            String message = data.getUsername();
+            Platform.runLater(() -> App.INSTANCE.switchToMainChatWindow(message));
+            return "You are logged in as a " + message;
+        }else if (command.getType() == CommandType.UPDATE_FILE_LIST){
+            UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
+            List<String> files = data.getFiles();
+            Platform.runLater(() -> App.INSTANCE.getMainController().updateServerListView(files));
+            return "";
         }
         return "Unrecognized message";
     }
 
-    private Command readCommand() throws IOException {
+    public Command readCommand() throws IOException {
         Command command = null;
         try {
             command = (Command) dis.readObject();
@@ -84,5 +111,9 @@ public class Network {
             System.err.println("Failed to send message to server");
             throw e;
         }
+    }
+
+    public void sendAuthMessage(String login, String password) throws IOException {
+        sendCommand(Command.authCommand(login, password));
     }
 }

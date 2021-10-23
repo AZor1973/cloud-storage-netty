@@ -5,13 +5,14 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane prefHeight="600" prefWidth="800" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.ChatController">
+<AnchorPane prefHeight="600" prefWidth="800" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.MainController">
    <HBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <padding>
          <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
       </padding>
-      <VBox HBox.hgrow="ALWAYS">
-         <ListView fx:id="listViewServer" onKeyPressed="#selectFileToDownloadKey" onMouseClicked="#selectFileToDownloadMouse" VBox.vgrow="ALWAYS" />
+      <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
+         <Button fx:id="upServerButton" mnemonicParsing="false" onAction="#getServerParent" prefWidth="120.0" text="UP" VBox.vgrow="ALWAYS" />
+         <ListView fx:id="serverListView" onKeyPressed="#selectFileToDownloadKey" onMouseClicked="#selectFileToDownloadMouse" VBox.vgrow="ALWAYS" />
          <TextField fx:id="output" editable="false" onKeyPressed="#keyHandleOutput" VBox.vgrow="ALWAYS">
             <font>
                <Font size="14.0" />
@@ -45,11 +46,12 @@
             </VBox.margin>
          </Button>
       </VBox>
-      <VBox HBox.hgrow="ALWAYS">
+      <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
          <HBox.margin>
             <Insets />
          </HBox.margin>
-         <ListView fx:id="listViewClient" onKeyPressed="#selectFileToUploadKey" onMouseClicked="#selectFileToUploadMouse" VBox.vgrow="ALWAYS" />
+         <Button fx:id="upClientButton" mnemonicParsing="false" onAction="#getClientParent" prefWidth="120.0" text="UP" VBox.vgrow="ALWAYS" />
+         <ListView fx:id="clientListView" onKeyPressed="#selectFileToUploadKey" onMouseClicked="#selectFileToUploadMouse" VBox.vgrow="ALWAYS" />
          <TextField fx:id="input" editable="false" onAction="#upload" onKeyPressed="#keyHandleInput" VBox.vgrow="ALWAYS">
             <font>
                <Font size="14.0" />

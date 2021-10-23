@@ -1,6 +1,7 @@
 package com.geekbrains.client;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -11,6 +12,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.slf4j.Slf4j;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -23,7 +25,7 @@ import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
 @Slf4j
-public class ChatController implements Initializable {
+public class MainController implements Initializable {
     @FXML
     public TextField input;
     @FXML
@@ -33,9 +35,9 @@ public class ChatController implements Initializable {
     @FXML
     public Button downloadButton;
     @FXML
-    public ListView<String> listViewServer;
+    public ListView<String> serverListView;
     @FXML
-    public ListView<String> listViewClient;
+    public ListView<String> clientListView;
     private Network network;
     private List<Path> fileListClient;
     private String uploadFileName;
@@ -46,7 +48,7 @@ public class ChatController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        updateFileList(Path.of(System.getProperty("user.dir")));
+        updateClientListView(Path.of(System.getProperty("user.dir")));
         network = Network.getInstance();
         network.connect();
         Thread readThread = new Thread(() -> {
@@ -63,54 +65,53 @@ public class ChatController implements Initializable {
         readThread.start();
     }
 
-    public void updateFileList(Path path) {
-        listViewClient.getItems().clear();
+    public void updateClientListView(Path path) {
+        clientListView.getItems().clear();
         fileListClient = new ArrayList<>();
         try {
             fileListClient.addAll(Files.list(path).map(Path::toAbsolutePath).collect(Collectors.toList()));
         } catch (IOException e) {
             e.printStackTrace();
         }
-        for (Path path1 : fileListClient) {
-            listViewClient.getItems().add(String.valueOf(path1.getFileName()));
-        }
+        List<String> list = fileListClient.stream().map(p -> p.getFileName().toString()).collect(Collectors.toList());
+        clientListView.getItems().addAll(list);
+//        for (Path path1 : fileListClient) {
+//            clientListView.getItems().add(String.valueOf(path1.getFileName()));
+//        }
+    }
+
+    public void updateServerListView(List<String> files) {
+        serverListView.getItems().clear();
+        serverListView.getItems().addAll(files);
     }
 
     public void selectFileToUploadMouse(MouseEvent mouseEvent) throws IOException {
         if (mouseEvent.getClickCount() == 2) {
             getFile();
-        } else if (mouseEvent.getButton() == MouseButton.SECONDARY) {
-            moveToParent();
         }
     }
 
     public void selectFileToUploadKey(KeyEvent keyEvent) throws IOException {
-        if (keyEvent.getCode() == KeyCode.ENTER){
+        if (keyEvent.getCode() == KeyCode.ENTER) {
             getFile();
-        }else  if (keyEvent.getCode() == KeyCode.ESCAPE){
+        } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
             moveToParent();
         }
     }
 
     private void moveToParent() {
-        uploadFileName = listViewClient.getSelectionModel().getSelectedItem();
-        Path upperPath = Paths.get(uploadFileName).getParent();
-        for (Path value : fileListClient) {
-            if (value.getFileName().equals(Paths.get(uploadFileName))) {
-                upperPath = value.getParent().getParent();
-            }
-        }
+        Path upperPath = uploadFilepath.getParent();
         if (upperPath != null) {
-            updateFileList(upperPath);
+            updateClientListView(upperPath);
         }
     }
 
     private void getFile() throws IOException {
-        if (fis != null){
+        if (fis != null) {
             fis = null;
-//            fis.close();   // don't work
+//            fis.close();   // does not work
         }
-        uploadFileName = listViewClient.getSelectionModel().getSelectedItem();
+        uploadFileName = clientListView.getSelectionModel().getSelectedItem();
         for (Path value : fileListClient) {
             if (value.getFileName().equals(Paths.get(uploadFileName))) {
                 uploadFilepath = value;
@@ -118,7 +119,7 @@ public class ChatController implements Initializable {
         }
         assert uploadFilepath != null;
         if (Files.isDirectory(uploadFilepath)) {
-            updateFileList(uploadFilepath);
+            updateClientListView(uploadFilepath);
         } else {
             uploadFileSize = Files.size(uploadFilepath);
             fis = new FileInputStream(String.valueOf(uploadFilepath));
@@ -129,20 +130,20 @@ public class ChatController implements Initializable {
         }
     }
 
-    private void putMessage(String message){
+    private void putMessage(String message) {
         input.clear();
         input.setText(message);
     }
 
     public void upload() throws IOException {
-        if (fis != null){
+        if (fis != null) {
             network.sendFile(uploadFileName, uploadFileSize, uploadFileBytes);
             input.clear();
-//            fis.close();  // don't work
+//            fis.close();  // does not work
             fis = null;
             uploadFileName = null;
             uploadFileSize = 0;
-            listViewClient.requestFocus();
+            clientListView.requestFocus();
         }
     }
 
@@ -155,29 +156,38 @@ public class ChatController implements Initializable {
     }
 
     public void keyHandleInput(KeyEvent keyEvent) {
-        if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP){
-            if (fis != null){
+        if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
+            if (fis != null) {
                 input.clear();
-//            fis.close(); // don't work
+//            fis.close(); // does not work
                 fis = null;
                 uploadFileName = null;
                 uploadFileSize = 0;
-                listViewClient.requestFocus();
+                clientListView.requestFocus();
             }
-        }else if (keyEvent.getCode() == KeyCode.LEFT){
+        } else if (keyEvent.getCode() == KeyCode.LEFT) {
             output.requestFocus();
         }
     }
 
     public void keyHandleOutput(KeyEvent keyEvent) {
-        if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP){
-            if (fis != null){
+        if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
+            if (fis != null) {
                 output.clear();
-                listViewServer.requestFocus();
+                serverListView.requestFocus();
             }
-        }else if (keyEvent.getCode() == KeyCode.RIGHT){
+        } else if (keyEvent.getCode() == KeyCode.RIGHT) {
             input.requestFocus();
         }
+    }
+
+    public void getServerParent(ActionEvent actionEvent) {
+
+    }
+
+    public void getClientParent(ActionEvent actionEvent) {
+
+        moveToParent();
     }
 }
 

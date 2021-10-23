@@ -117,7 +117,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.geekbrains.client.App</mainClass>
+                            <mainClass>com.geekbrains.client.Launcher</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

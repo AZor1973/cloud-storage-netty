@@ -6,6 +6,7 @@ public enum CommandType {
     ERROR,
     FILE_UPLOAD,
     INFO,
+    UPDATE_FILE_LIST,
     END,
     DOWNLOAD_FILE,
     UPLOAD_FILE,

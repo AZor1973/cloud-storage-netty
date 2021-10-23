@@ -4,6 +4,7 @@ import com.geekbrains.common.commands.*;
 
 import java.io.Serial;
 import java.io.Serializable;
+import java.util.List;
 
 public class Command implements Serializable {
     @Serial
@@ -40,10 +41,10 @@ public class Command implements Serializable {
         return command;
     }
 
-    public static Command fileUploadCommand(String fileName, long fileSize, byte[] bytes){
+    public static Command uploadFileCommand(String fileName, long fileSize, byte[] bytes){
         Command command = new Command();
         command.type = CommandType.FILE_UPLOAD;
-        command.data = new FileUploadCommandData(fileName, fileSize, bytes);
+        command.data = new UploadFileCommandData(fileName, fileSize, bytes);
         return command;
     }
 
@@ -51,6 +52,13 @@ public class Command implements Serializable {
         Command command = new Command();
         command.type = CommandType.INFO;
         command.data = new InfoCommandData(message);
+        return command;
+    }
+
+    public static Command updateFileListCommand(List<String> files){
+        Command command = new Command();
+        command.type = CommandType.UPDATE_FILE_LIST;
+        command.data = new UpdateFileListCommandData(files);
         return command;
     }
 }

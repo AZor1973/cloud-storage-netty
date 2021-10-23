@@ -13,10 +13,12 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import lombok.extern.slf4j.Slf4j;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class Server {
-
+    private static List<String> clients = new ArrayList<>();
     private static final Path root = Path.of("root");
 
     public Server() {
@@ -48,6 +50,27 @@ public class Server {
             auth.shutdownGracefully();
             worker.shutdownGracefully();
         }
+    }
+
+    public static void addClient(String user){
+        clients.add(user);
+    }
+
+    public static void removeClient(String user){
+        clients.removeIf(client -> client.equals(user));
+    }
+
+    public static void printClients(){
+        System.out.println(clients);
+    }
+
+    public static boolean isUsernameBusy(String username) {
+        for (String client : clients) {
+            if (client.equals(username)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static Path getRoot(){
