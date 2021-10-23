@@ -1,7 +1,6 @@
 package com.geekbrains.client;
 
 import javafx.application.Platform;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Button;
@@ -11,13 +10,11 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
@@ -50,7 +47,6 @@ public class MainController implements Initializable {
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         currentPath = Path.of(System.getProperty("user.dir"));
-        System.out.println(currentPath);
         updateClientListView(currentPath);
         network = Network.getInstance();
         network.connect();
@@ -113,8 +109,6 @@ public class MainController implements Initializable {
             updateClientListView(parentPath);
             currentPath = parentPath;
         }
-        System.out.println(parentPath);
-        System.out.println(currentPath);
     }
 
     private void getFile() throws IOException {
@@ -135,8 +129,6 @@ public class MainController implements Initializable {
             input.setText(selectedFileName);
             input.requestFocus();
         }
-
-        System.out.println(currentPath);
     }
 
     private void putMessage(String message) {
@@ -190,12 +182,11 @@ public class MainController implements Initializable {
         }
     }
 
-    public void getServerParent(ActionEvent actionEvent) {
+    public void getServerParent() {
 
     }
 
-    public void getClientParent(ActionEvent actionEvent) {
-
+    public void getClientParent() {
         moveToParent();
     }
 }

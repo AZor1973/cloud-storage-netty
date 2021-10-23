@@ -2,6 +2,7 @@ package com.geekbrains.server;
 
 import com.geekbrains.common.Command;
 import com.geekbrains.common.commands.AuthCommandData;
+import com.geekbrains.common.commands.RegCommandData;
 import com.geekbrains.common.commands.UploadFileCommandData;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -24,14 +25,36 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         switch (msg.getType()) {
             case FILE_UPLOAD -> fileUpload(ctx, msg);
             case AUTH -> authentication(ctx, msg);
+            case REG -> registrationNewUser(ctx, msg);
         }
+    }
 
+    private void registrationNewUser(ChannelHandlerContext ctx, Command msg) throws IOException {
+        RegCommandData data = (RegCommandData) msg.getData();
+        String login = data.getLogin();
+        String password = data.getPassword();
+        String username = data.getUsername();
+        int result = ds.addNewUser(username, login, password);
+        System.out.println(result);
+        if (result == 0) {
+            ctx.writeAndFlush(Command.errorCommand("This user is already registered!"));
+        } else if (Server.isUsernameBusy(username)) {
+            ctx.writeAndFlush(Command.errorCommand("This user is already signed in!"));
+        } else {
+            this.username = username;
+            Server.addClient(username);
+            pathDir = Server.getRoot().resolve(username);
+            if (!Files.exists(pathDir)) {
+                Files.createDirectory(pathDir);
+            }
+            ctx.writeAndFlush(Command.authOkCommand(username));
+            updateFileList(ctx);
+        }
     }
 
     @Override
     public void channelUnregistered(ChannelHandlerContext ctx) {
         Server.removeClient(username);
-        Server.printClients();
     }
 
     private void authentication(ChannelHandlerContext ctx, Command msg) throws IOException {
@@ -42,19 +65,17 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         if (username == null) {
             ctx.writeAndFlush(Command.errorCommand("Incorrect login or password!"));
         } else if (Server.isUsernameBusy(username)) {
-            System.out.println("This user is already signed in!");
             ctx.writeAndFlush(Command.errorCommand("This user is already signed in!"));
         } else {
             this.username = username;
             Server.addClient(username);
             pathDir = Server.getRoot().resolve(username);
-            if (!Files.exists(pathDir)){
+            if (!Files.exists(pathDir)) {
                 Files.createDirectory(pathDir);
             }
             ctx.writeAndFlush(Command.authOkCommand(username));
             updateFileList(ctx);
         }
-       Server.printClients();
     }
 
     private void fileUpload(ChannelHandlerContext ctx, Command msg) throws IOException {
@@ -71,7 +92,6 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
                 log.debug("wrote: {}", fileName);
                 ctx.writeAndFlush(Command.infoCommand(fileName + " uploaded."));
                 updateFileList(ctx);
-
             } else {
                 Files.delete(path);
                 log.error("wrong size: {},rec.: {},wr.: {}", fileName, fileSize, Files.size(path));

@@ -1,7 +1,9 @@
 package com.geekbrains.server;
 
 import lombok.extern.slf4j.Slf4j;
+
 import java.sql.*;
+
 @Slf4j
 public class DatabaseService {
     private static final String DB_URL = "jdbc:sqlite:users.db";
@@ -49,18 +51,17 @@ public class DatabaseService {
         }
     }
 
-    public void addNewUser(String username, String login, String password) {
+    public int addNewUser(String username, String login, String password) {
+        int result = 0;
         try {
-            System.out.println("start");
             addNewUserStatement.setString(1, login);
             addNewUserStatement.setString(2, password);
             addNewUserStatement.setString(3, username);
-            addNewUserStatement.executeUpdate();
-            System.out.println("end");
+            result = addNewUserStatement.executeUpdate();
         } catch (SQLException e) {
             log.error("Failed to database connection");
         }
-
+        return result;
     }
 
     public void closeConnection() {

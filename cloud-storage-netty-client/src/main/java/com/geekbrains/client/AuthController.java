@@ -1,16 +1,18 @@
 package com.geekbrains.client;
 
-import com.geekbrains.client.dialogs.Dialogs;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
+
 import java.io.IOException;
 
 public class AuthController {
     @FXML
     public Button authButton;
+    @FXML
+    public Button regButton;
     @FXML
     private TextField loginField;
     @FXML
@@ -21,14 +23,14 @@ public class AuthController {
         String login = loginField.getText();
         String password = passwordField.getText();
         if (login == null || login.isBlank() || password == null || password.isBlank()) {
-            Dialogs.AuthError.EMPTY_CREDENTIALS.show();
+            Network.getInstance().show("Fields must be filled");
             return;
         }
         if (!Network.getInstance().isConnected()) {
-            Dialogs.NetworkError.SERVER_CONNECT.show();
+            Network.getInstance().show("Network error");
             return;
         }
-            Network.getInstance().sendAuthMessage(login, password);
+        Network.getInstance().sendAuthMessage(login, password);
     }
 
     public void submitLogin() {
@@ -36,14 +38,18 @@ public class AuthController {
     }
 
     public void goToPassword(KeyEvent keyEvent) {
-        if (keyEvent.getCode().isArrowKey()){
+        if (keyEvent.getCode().isArrowKey()) {
             passwordField.requestFocus();
         }
     }
 
     public void goToLogin(KeyEvent keyEvent) {
-        if (keyEvent.getCode().isArrowKey()){
+        if (keyEvent.getCode().isArrowKey()) {
             loginField.requestFocus();
         }
+    }
+
+    public void registration() throws IOException {
+        App.INSTANCE.initRegWindow();
     }
 }

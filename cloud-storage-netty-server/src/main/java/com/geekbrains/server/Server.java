@@ -60,10 +60,6 @@ public class Server {
         clients.removeIf(client -> client.equals(user));
     }
 
-    public static void printClients(){
-        System.out.println(clients);
-    }
-
     public static boolean isUsernameBusy(String username) {
         for (String client : clients) {
             if (client.equals(username)) {

@@ -1,6 +1,5 @@
 package com.geekbrains.client;
 
-import com.geekbrains.client.dialogs.Dialogs;
 import com.geekbrains.common.Command;
 import com.geekbrains.common.CommandType;
 import com.geekbrains.common.commands.AuthOkCommandData;
@@ -10,6 +9,7 @@ import com.geekbrains.common.commands.UpdateFileListCommandData;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 import javafx.application.Platform;
+import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -72,12 +72,8 @@ public class Network {
         } else if (command.getType() == CommandType.ERROR) {
             ErrorCommandData data = (ErrorCommandData) command.getData();
             String error = data.getErrorMessage();
-            if (error.trim().equals("Incorrect login or password!")){
-                Platform.runLater(Dialogs.AuthError.INVALID_CREDENTIALS::show);
-            }else if (error.trim().equals("This user is already signed in!")){
-                Platform.runLater(Dialogs.AuthError.USERNAME_BUSY::show);
-            }
-            return error;
+                Platform.runLater(() -> show(error));
+            return "";
         } else if (command.getType() == CommandType.AUTH_OK) {
             AuthOkCommandData data = (AuthOkCommandData) command.getData();
             String message = data.getUsername();
@@ -115,5 +111,16 @@ public class Network {
 
     public void sendAuthMessage(String login, String password) throws IOException {
         sendCommand(Command.authCommand(login, password));
+    }
+
+    public void sendRegMessage(String username, String login, String password) throws IOException {
+        sendCommand(Command.regCommand(username, login, password));
+    }
+
+    public void show(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.initOwner(App.INSTANCE.getPrimaryStage());
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 }

@@ -6,16 +6,22 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import java.awt.event.WindowEvent;
+import java.beans.EventHandler;
 import java.io.IOException;
 
 public class App extends Application {
     public static App INSTANCE;
     private static final String MAIN_WINDOW_FXML = "main.fxml";
     private static final String AUTH_FXML = "auth.fxml";
+    private static final String REG_FXML = "reg.fxml";
     private Stage primaryStage;
     private Stage authStage;
+    private Stage regStage;
     private FXMLLoader mainLoader;
     private FXMLLoader authLoader;
+    private FXMLLoader regLoader;
 
     @Override
     public void init() {
@@ -36,6 +42,10 @@ public class App extends Application {
 
     public Stage getAuthStage() {
         return authStage;
+    }
+
+    public Stage getRegStage(){
+        return regStage;
     }
 
     private AuthController getAuthController() {
@@ -67,7 +77,20 @@ public class App extends Application {
         authStage.initOwner(primaryStage);
         authStage.initModality(Modality.WINDOW_MODAL);
         authStage.setScene(new Scene(authDialogPanel));
+        authStage.setResizable(false);
         authStage.setOnCloseRequest(we -> primaryStage.close());
+    }
+
+    public void initRegWindow() throws IOException {
+        regLoader = new FXMLLoader();
+        regLoader.setLocation(App.class.getResource(REG_FXML));
+        Parent regPanel = regLoader.load();
+        regStage = new Stage();
+        regStage.initOwner(authStage);
+        regStage.initModality(Modality.WINDOW_MODAL);
+        regStage.setScene(new Scene(regPanel));
+        regStage.setResizable(false);
+        regStage.show();
     }
 
     public void switchToMainChatWindow(String username) {

@@ -3,10 +3,11 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="202.0" prefWidth="317.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.AuthController">
-    <Label layoutX="21.0" layoutY="25.0" text="Логин:" AnchorPane.bottomAnchor="160.0" AnchorPane.leftAnchor="21.0" AnchorPane.rightAnchor="259.0" AnchorPane.topAnchor="25.0" />
-    <Label layoutX="18.0" layoutY="82.0" text="Пароль:" AnchorPane.leftAnchor="18.0" AnchorPane.topAnchor="82.0" />
-    <TextField fx:id="loginField" layoutX="87.0" layoutY="21.0" onAction="#submitLogin" onKeyPressed="#goToPassword" />
-    <PasswordField fx:id="passwordField" layoutX="87.0" layoutY="78.0" onAction="#executeAuth" onKeyPressed="#goToLogin" />
-    <Button fx:id="authButton" layoutX="88.0" layoutY="150.0" mnemonicParsing="false" onAction="#executeAuth" prefHeight="25.0" prefWidth="149.0" text="Войти!" />
+<AnchorPane prefHeight="200.0" prefWidth="320.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.AuthController">
+   <Button fx:id="regButton" layoutX="149.0" layoutY="140.0" mnemonicParsing="false" onAction="#registration" text="Регистрация" />
+    <Label layoutX="20.0" layoutY="34.0" text="Логин:" AnchorPane.bottomAnchor="151.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="260.0" AnchorPane.topAnchor="34.0" />
+    <Label layoutX="18.0" layoutY="89.0" text="Пароль:" AnchorPane.leftAnchor="18.0" AnchorPane.topAnchor="89.0" />
+    <TextField fx:id="loginField" layoutX="85.0" layoutY="30.0" onAction="#submitLogin" onKeyPressed="#goToPassword" />
+    <PasswordField fx:id="passwordField" layoutX="85.0" layoutY="85.0" onAction="#executeAuth" onKeyPressed="#goToLogin" />
+    <Button fx:id="authButton" layoutX="85.0" layoutY="140.0" mnemonicParsing="false" onAction="#executeAuth" text="Войти!" />
 </AnchorPane>
