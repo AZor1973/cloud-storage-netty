@@ -123,4 +123,12 @@ public class Network {
         alert.setContentText(message);
         alert.showAndWait();
     }
+
+    public void sendFileRequest(String fileNameToDownload) throws IOException {
+        sendCommand(Command.fileRequestCommand(fileNameToDownload));
+    }
+
+    public void sendUpRequest() throws IOException {
+        sendCommand(Command.upRequestCommand());
+    }
 }

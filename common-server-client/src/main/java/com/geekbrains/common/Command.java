@@ -1,11 +1,12 @@
 package com.geekbrains.common;
 
 import com.geekbrains.common.commands.*;
+import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
-
+@Getter
 public class Command implements Serializable {
     @Serial
     private static final long serialVersionUID = 4527858572263852177L;
@@ -19,14 +20,6 @@ public class Command implements Serializable {
         return command;
     }
 
-    public Object getData() {
-        return data;
-    }
-
-    public CommandType getType() {
-        return type;
-    }
-
     public static Command authCommand(String login, String password) {
         Command command = new Command();
         command.data = new AuthCommandData(login, password);
@@ -38,6 +31,13 @@ public class Command implements Serializable {
         Command command = new Command();
         command.data = new AuthOkCommandData(username);
         command.type = CommandType.AUTH_OK;
+        return command;
+    }
+
+    public static Command fileRequestCommand(String fileName){
+        Command command = new Command();
+        command.data = new FileRequestCommandData(fileName);
+        command.type = CommandType.FILE_REQUEST;
         return command;
     }
 
@@ -66,6 +66,12 @@ public class Command implements Serializable {
         Command command = new Command();
         command.type = CommandType.UPDATE_FILE_LIST;
         command.data = new UpdateFileListCommandData(files);
+        return command;
+    }
+
+    public static Command upRequestCommand() {
+        Command command = new Command();
+        command.type = CommandType.UP_REQUEST;
         return command;
     }
 }

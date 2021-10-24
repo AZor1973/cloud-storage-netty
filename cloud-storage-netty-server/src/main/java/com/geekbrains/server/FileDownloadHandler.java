@@ -2,6 +2,7 @@ package com.geekbrains.server;
 
 import com.geekbrains.common.Command;
 import com.geekbrains.common.commands.AuthCommandData;
+import com.geekbrains.common.commands.FileRequestCommandData;
 import com.geekbrains.common.commands.RegCommandData;
 import com.geekbrains.common.commands.UploadFileCommandData;
 import io.netty.channel.ChannelHandlerContext;
@@ -26,6 +27,29 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             case FILE_UPLOAD -> fileUpload(ctx, msg);
             case AUTH -> authentication(ctx, msg);
             case REG -> registrationNewUser(ctx, msg);
+            case FILE_REQUEST -> fileDownload(ctx, msg);
+            case UP_REQUEST -> toFolderAbove(ctx);
+        }
+    }
+
+    private void toFolderAbove(ChannelHandlerContext ctx) throws IOException {
+        if (!pathDir.getParent().equals(Server.getRoot())){
+            pathDir = pathDir.getParent();
+            updateFileList(ctx, pathDir);
+        }
+    }
+
+    private void fileDownload(ChannelHandlerContext ctx, Command msg) throws IOException {
+        FileRequestCommandData data = (FileRequestCommandData) msg.getData();
+        String fileNameToDownload = data.getFileName();
+        Path path = Path.of(String.valueOf(pathDir), fileNameToDownload);
+        if (!Files.exists(path)) {
+            ctx.writeAndFlush(Command.errorCommand(fileNameToDownload + " does not exist"));
+        } else {
+            if (Files.isDirectory(path)) {
+                pathDir = path;
+                updateFileList(ctx, path);
+            }
         }
     }
 
@@ -48,7 +72,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
                 Files.createDirectory(pathDir);
             }
             ctx.writeAndFlush(Command.authOkCommand(username));
-            updateFileList(ctx);
+            updateFileList(ctx, pathDir);
         }
     }
 
@@ -74,7 +98,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
                 Files.createDirectory(pathDir);
             }
             ctx.writeAndFlush(Command.authOkCommand(username));
-            updateFileList(ctx);
+            updateFileList(ctx, pathDir);
         }
     }
 
@@ -82,7 +106,8 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         UploadFileCommandData data = (UploadFileCommandData) msg.getData();
         String fileName = data.getFileName();
         long fileSize = data.getFileSize();
-        Path path = Server.getRoot().resolve(username).resolve(fileName);
+        Path path = pathDir.resolve(fileName);
+        System.out.println(path);
         if (!Files.exists(path)) {
             Files.createFile(path);
             Files.write(path, data.getBytes(), StandardOpenOption.CREATE,
@@ -91,7 +116,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             if (Files.size(path) == fileSize) {
                 log.debug("wrote: {}", fileName);
                 ctx.writeAndFlush(Command.infoCommand(fileName + " uploaded."));
-                updateFileList(ctx);
+                updateFileList(ctx, pathDir);
             } else {
                 Files.delete(path);
                 log.error("wrong size: {},rec.: {},wr.: {}", fileName, fileSize, Files.size(path));
@@ -103,7 +128,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         }
     }
 
-    private void updateFileList(ChannelHandlerContext ctx) throws IOException {
-        ctx.writeAndFlush(Command.updateFileListCommand(Files.list(pathDir).map(p -> p.getFileName().toString()).collect(Collectors.toList())));
+    private void updateFileList(ChannelHandlerContext ctx, Path path) throws IOException {
+        ctx.writeAndFlush(Command.updateFileListCommand(Files.list(path).map(p -> p.getFileName().toString()).collect(Collectors.toList())));
     }
 }

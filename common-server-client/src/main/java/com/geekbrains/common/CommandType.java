@@ -8,8 +8,10 @@ public enum CommandType {
     INFO,
     REG,
     UPDATE_FILE_LIST,
+    FILE_REQUEST,
+    UP_REQUEST,
     END,
     DOWNLOAD_FILE,
     UPLOAD_FILE,
-    UPDATE_DATABASE
+    UPDATE_DATABASE;
 }

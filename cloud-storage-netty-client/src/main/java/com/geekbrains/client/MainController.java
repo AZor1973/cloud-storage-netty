@@ -10,6 +10,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.slf4j.Slf4j;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -43,6 +44,7 @@ public class MainController implements Initializable {
     private byte[] selectedFileBytes;
     private Path parentPath;
     private Path currentPath;
+    private String fileNameToDownload;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -54,7 +56,8 @@ public class MainController implements Initializable {
             try {
                 while (true) {
                     String message = network.readMessage();
-                    Platform.runLater(() -> putMessage(message));
+                    if (!message.isEmpty())
+                        Platform.runLater(() -> putMessage(message));
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -95,14 +98,14 @@ public class MainController implements Initializable {
     }
 
     private void moveToParent() {
-        if (selectedFilePath != null){
-            if (Files.isDirectory(selectedFilePath)){
+        if (selectedFilePath != null) {
+            if (Files.isDirectory(selectedFilePath)) {
                 parentPath = selectedFilePath.getParent();
-            }else {
+            } else {
                 parentPath = selectedFilePath.getParent().getParent();
             }
             selectedFilePath = parentPath;
-        }else {
+        } else {
             parentPath = currentPath.getParent();
         }
         if (parentPath != null) {
@@ -148,8 +151,11 @@ public class MainController implements Initializable {
         }
     }
 
-    public void selectFileToDownloadMouse(MouseEvent mouseEvent) {
-
+    public void selectFileToDownloadMouse(MouseEvent mouseEvent) throws IOException {
+        if (mouseEvent.getClickCount() == 2) {
+            fileNameToDownload = serverListView.getSelectionModel().getSelectedItem();
+            network.sendFileRequest(fileNameToDownload);
+        }
     }
 
     public void selectFileToDownloadKey(KeyEvent keyEvent) {
@@ -182,8 +188,8 @@ public class MainController implements Initializable {
         }
     }
 
-    public void getServerParent() {
-
+    public void getServerParent() throws IOException {
+        network.sendUpRequest();
     }
 
     public void getClientParent() {
