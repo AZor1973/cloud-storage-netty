@@ -14,6 +14,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 public class Network {
@@ -154,7 +155,7 @@ public class Network {
         sendCommand(Command.deleteRequestCommand(fileName));
     }
 
-    public void sendCreateDirRequest() throws IOException {
-        sendCommand(Command.createDirRequestCommand());
+    public void sendCreateDirRequest(String name) throws IOException {
+        sendCommand(Command.createDirRequestCommand(name));
     }
 }

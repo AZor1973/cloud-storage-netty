@@ -36,8 +36,16 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         }
     }
 
-    private void createDirectory(ChannelHandlerContext ctx, Command msg) {
-
+    private void createDirectory(ChannelHandlerContext ctx, Command msg) throws IOException {
+        CreateDirRequestCommandData data = (CreateDirRequestCommandData) msg.getData();
+        String dirName = data.getName();
+        Path path = pathDir.resolve(dirName);
+        if (!Files.exists(path)) {
+            Files.createDirectory(path);
+        }
+        updateFileList(ctx, pathDir);
+        log.debug(dirName + " created");
+        ctx.writeAndFlush(Command.infoCommand(dirName + " created"));
     }
 
     private void deleteFile(ChannelHandlerContext ctx, Command msg) throws IOException {

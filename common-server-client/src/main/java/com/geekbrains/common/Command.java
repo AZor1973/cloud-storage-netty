@@ -82,9 +82,10 @@ public class Command implements Serializable {
         return command;
     }
 
-    public static Command createDirRequestCommand() {
+    public static Command createDirRequestCommand(String name) {
         Command command = new Command();
         command.type = CommandType.CREATE_DIR_REQUEST;
+        command.data = new CreateDirRequestCommandData(name);
         return command;
     }
 }

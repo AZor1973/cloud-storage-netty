@@ -1,5 +1,6 @@
 package com.geekbrains.client;
 
+import com.sun.javafx.scene.control.ContextMenuContent;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -18,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.stream.Collectors;
 
@@ -96,17 +98,26 @@ public class MainController implements Initializable {
     }
 
     private void createDirRequest() {
-
-        try {
-            network.sendCreateDirRequest();
-        } catch (IOException e) {
-            e.printStackTrace();
+        TextInputDialog editDialog = new TextInputDialog("Enter directory name");
+        editDialog.setTitle("Create a directory");
+        editDialog.setHeaderText("Enter directory name");
+        editDialog.setContentText("Directory name:");
+        Optional<String> optName = editDialog.showAndWait();
+        if (optName.isPresent()){
+            String name = optName.get();
+            try {
+                network.sendCreateDirRequest(name);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
     }
 
     private void deleteRequest() {
         String str = serverListView.getSelectionModel().getSelectedItem();
         Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Deletion");
+        alert.setHeaderText("Deletion");
         alert.setContentText("Are you sure?\n" + str + " will be deleted!");
         alert.showAndWait();
         if (alert.getResult() == ButtonType.CANCEL){
