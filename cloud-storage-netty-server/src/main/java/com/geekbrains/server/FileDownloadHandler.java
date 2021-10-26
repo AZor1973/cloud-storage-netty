@@ -9,6 +9,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +21,8 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     private final DatabaseService ds = new DatabaseService();
     private String username;
     private Path pathDir;
+    private FileInputStream fis;
+    private byte[] fileBytes;
 
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Command msg) throws Exception {
@@ -33,7 +36,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     private void toFolderAbove(ChannelHandlerContext ctx) throws IOException {
-        if (!pathDir.getParent().equals(Server.getRoot())){
+        if (!pathDir.getParent().equals(Server.getRoot())) {
             pathDir = pathDir.getParent();
             updateFileList(ctx, pathDir);
         }
@@ -42,13 +45,19 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     private void fileDownload(ChannelHandlerContext ctx, Command msg) throws IOException {
         FileRequestCommandData data = (FileRequestCommandData) msg.getData();
         String fileNameToDownload = data.getFileName();
-        Path path = Path.of(String.valueOf(pathDir), fileNameToDownload);
+        Path path = pathDir.resolve(fileNameToDownload);
         if (!Files.exists(path)) {
             ctx.writeAndFlush(Command.errorCommand(fileNameToDownload + " does not exist"));
         } else {
             if (Files.isDirectory(path)) {
                 pathDir = path;
                 updateFileList(ctx, path);
+            } else {
+                long fileSize = Files.size(path);
+                fis = new FileInputStream(String.valueOf(path));
+                fileBytes = new byte[(int) fileSize];
+                fis.read(fileBytes);
+                ctx.writeAndFlush(Command.uploadFileCommand(fileNameToDownload, fileSize, fileBytes));
             }
         }
     }
@@ -107,7 +116,6 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         String fileName = data.getFileName();
         long fileSize = data.getFileSize();
         Path path = pathDir.resolve(fileName);
-        System.out.println(path);
         if (!Files.exists(path)) {
             Files.createFile(path);
             Files.write(path, data.getBytes(), StandardOpenOption.CREATE,

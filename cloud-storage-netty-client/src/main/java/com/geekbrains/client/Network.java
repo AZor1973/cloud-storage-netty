@@ -2,18 +2,17 @@ package com.geekbrains.client;
 
 import com.geekbrains.common.Command;
 import com.geekbrains.common.CommandType;
-import com.geekbrains.common.commands.AuthOkCommandData;
-import com.geekbrains.common.commands.ErrorCommandData;
-import com.geekbrains.common.commands.InfoCommandData;
-import com.geekbrains.common.commands.UpdateFileListCommandData;
+import com.geekbrains.common.commands.*;
 import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
 import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
 import java.net.Socket;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 
 @Slf4j
@@ -84,6 +83,25 @@ public class Network {
             List<String> files = data.getFiles();
             Platform.runLater(() -> App.INSTANCE.getMainController().updateServerListView(files));
             return "";
+        }else if (command.getType() == CommandType.FILE_UPLOAD){
+            UploadFileCommandData data = (UploadFileCommandData) command.getData();
+            String fileName = data.getFileName();
+            long fileSize = data.getFileSize();
+            Path path = Path.of(fileName);
+            if (!Files.exists(path)) {
+                Files.createFile(path);
+                Files.write(path, data.getBytes(), StandardOpenOption.CREATE,
+                        StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+                if (Files.size(path) == fileSize) {
+                    Platform.runLater(() -> App.INSTANCE.getMainController().updateClientListViewStatic());
+                    return fileName + " downloaded.";
+                }else {
+                    Files.delete(path);
+                    return "File download error.";
+                }
+            }else {
+                return fileName + " is already exists.";
+            }
         }
         return "Unrecognized message";
     }

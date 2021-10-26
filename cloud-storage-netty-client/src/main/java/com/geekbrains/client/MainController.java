@@ -1,11 +1,11 @@
 package com.geekbrains.client;
 
 import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.Button;
-import javafx.scene.control.ListView;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -45,9 +45,25 @@ public class MainController implements Initializable {
     private Path parentPath;
     private Path currentPath;
     private String fileNameToDownload;
+    private ContextMenu clientContextMenu;
+    private ContextMenu serverContextMenu;
+    private MenuItem menuItem1;
+    private MenuItem menuItem2;
+    private MenuItem menuItem3;
+    private MenuItem menuItem4;
+    private MenuItem menuItem5;
+    private MenuItem menuItem6;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        clientContextMenu = new ContextMenu();
+        serverContextMenu = new ContextMenu();
+        menuItem1 = new MenuItem("Go to parent directory");
+        menuItem2 = new MenuItem("Delete");
+        menuItem3 = new MenuItem("Create new directory");
+        menuItem4 = new MenuItem("Go to parent directory");
+        menuItem5 = new MenuItem("Delete");
+        menuItem6 = new MenuItem("Create new directory");
         currentPath = Path.of(System.getProperty("user.dir"));
         updateClientListView(currentPath);
         network = Network.getInstance();
@@ -65,6 +81,20 @@ public class MainController implements Initializable {
         });
         readThread.setDaemon(true);
         readThread.start();
+        clientListView.setContextMenu(clientContextMenu);
+        serverListView.setContextMenu(serverContextMenu);
+        clientContextMenu.getItems().add(menuItem1);
+        clientContextMenu.getItems().add(menuItem2);
+        clientContextMenu.getItems().add(menuItem3);
+        serverContextMenu.getItems().add(menuItem4);
+        serverContextMenu.getItems().add(menuItem5);
+        serverContextMenu.getItems().add(menuItem6);
+        menuItem1.setOnAction(event -> moveToParent());
+        menuItem4.setOnAction(event -> getServerParent());
+    }
+
+    public void updateClientListViewStatic() {
+        updateClientListView(currentPath);
     }
 
     public void updateClientListView(Path path) {
@@ -85,13 +115,13 @@ public class MainController implements Initializable {
 
     public void selectFileToUploadMouse(MouseEvent mouseEvent) throws IOException {
         if (mouseEvent.getClickCount() == 2) {
-            getFile();
+            getFileToUpload();
         }
     }
 
     public void selectFileToUploadKey(KeyEvent keyEvent) throws IOException {
         if (keyEvent.getCode() == KeyCode.ENTER) {
-            getFile();
+            getFileToUpload();
         } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
             moveToParent();
         }
@@ -114,7 +144,7 @@ public class MainController implements Initializable {
         }
     }
 
-    private void getFile() throws IOException {
+    private void getFileToUpload() throws IOException {
         if (fis != null) {
             fis = null;
 //            fis.close();   // does not work
@@ -153,13 +183,22 @@ public class MainController implements Initializable {
 
     public void selectFileToDownloadMouse(MouseEvent mouseEvent) throws IOException {
         if (mouseEvent.getClickCount() == 2) {
-            fileNameToDownload = serverListView.getSelectionModel().getSelectedItem();
-            network.sendFileRequest(fileNameToDownload);
+            getFileToDownload();
         }
     }
 
-    public void selectFileToDownloadKey(KeyEvent keyEvent) {
+    private void getFileToDownload() {
+        fileNameToDownload = serverListView.getSelectionModel().getSelectedItem();
+        output.setText(fileNameToDownload);
+        output.requestFocus();
+    }
 
+    public void selectFileToDownloadKey(KeyEvent keyEvent) throws IOException {
+        if (keyEvent.getCode() == KeyCode.ENTER) {
+            getFileToDownload();
+        } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
+            getServerParent();
+        }
     }
 
     public void keyHandleInput(KeyEvent keyEvent) {
@@ -179,21 +218,31 @@ public class MainController implements Initializable {
 
     public void keyHandleOutput(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
-            if (fis != null) {
-                output.clear();
-                serverListView.requestFocus();
-            }
+            output.clear();
+            serverListView.requestFocus();
+            fileNameToDownload = null;
         } else if (keyEvent.getCode() == KeyCode.RIGHT) {
             input.requestFocus();
         }
     }
 
-    public void getServerParent() throws IOException {
-        network.sendUpRequest();
+    public void getServerParent(){
+        try {
+            network.sendUpRequest();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     public void getClientParent() {
         moveToParent();
+    }
+
+    public void download() throws IOException {
+        network.sendFileRequest(fileNameToDownload);
+        output.clear();
+        fileNameToDownload = null;
+        serverListView.requestFocus();
     }
 }
 

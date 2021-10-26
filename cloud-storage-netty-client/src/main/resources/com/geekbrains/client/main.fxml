@@ -11,9 +11,8 @@
          <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
       </padding>
       <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
-         <Button fx:id="upServerButton" mnemonicParsing="false" onAction="#getServerParent" prefWidth="120.0" text="UP" VBox.vgrow="ALWAYS" />
          <ListView fx:id="serverListView" onKeyPressed="#selectFileToDownloadKey" onMouseClicked="#selectFileToDownloadMouse" VBox.vgrow="ALWAYS" />
-         <TextField fx:id="output" editable="false" onKeyPressed="#keyHandleOutput" VBox.vgrow="ALWAYS">
+         <TextField fx:id="output" editable="false" onAction="#download" onKeyPressed="#keyHandleOutput" VBox.vgrow="ALWAYS">
             <font>
                <Font size="14.0" />
             </font>
@@ -37,7 +36,7 @@
                <Insets bottom="10.0" />
             </VBox.margin>
          </Button>
-         <Button fx:id="downloadButton" mnemonicParsing="false" text="&gt;&gt;">
+         <Button fx:id="downloadButton" mnemonicParsing="false" onAction="#download" text="&gt;&gt;">
             <font>
                <Font size="20.0" />
             </font>
@@ -50,7 +49,6 @@
          <HBox.margin>
             <Insets />
          </HBox.margin>
-         <Button fx:id="upClientButton" mnemonicParsing="false" onAction="#getClientParent" prefWidth="120.0" text="UP" VBox.vgrow="ALWAYS" />
          <ListView fx:id="clientListView" onKeyPressed="#selectFileToUploadKey" onMouseClicked="#selectFileToUploadMouse" VBox.vgrow="ALWAYS" />
          <TextField fx:id="input" editable="false" onAction="#upload" onKeyPressed="#keyHandleInput" VBox.vgrow="ALWAYS">
             <font>
