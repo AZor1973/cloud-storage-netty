@@ -1,5 +1,6 @@
 package com.geekbrains.client;
 
+import com.geekbrains.common.Command;
 import com.sun.javafx.scene.control.ContextMenuContent;
 import javafx.application.Platform;
 import javafx.event.ActionEvent;
@@ -11,7 +12,9 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
@@ -92,9 +95,38 @@ public class MainController implements Initializable {
         serverContextMenu.getItems().add(menuItem5);
         serverContextMenu.getItems().add(menuItem6);
         menuItem1.setOnAction(event -> moveToParent());
+        menuItem2.setOnAction(event -> deleteFile());
         menuItem4.setOnAction(event -> getServerParent());
         menuItem5.setOnAction(event -> deleteRequest());
         menuItem6.setOnAction(event -> createDirRequest());
+    }
+
+    private void deleteFile() {
+        String str = clientListView.getSelectionModel().getSelectedItem();
+        if (str == null) {
+            return;
+        }
+        if (warning(str)) return;
+        Path path = currentPath.resolve(str);
+        try {
+            if (Files.isDirectory(path)) {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Deleting a directory");
+                alert.setHeaderText("Deleting a directory");
+                alert.setContentText("Are you sure?\n" + str + " will be deleted with all files inside!");
+                alert.showAndWait();
+                if (alert.getResult() == ButtonType.CANCEL){
+                    return;
+                }
+                FileUtils.forceDelete(new File(String.valueOf(path)));
+            } else {
+                Files.delete(path);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        updateClientListView(currentPath);
+        putMessage(str + " deleted.");
     }
 
     private void createDirRequest() {
@@ -103,7 +135,7 @@ public class MainController implements Initializable {
         editDialog.setHeaderText("Enter directory name");
         editDialog.setContentText("Directory name:");
         Optional<String> optName = editDialog.showAndWait();
-        if (optName.isPresent()){
+        if (optName.isPresent()) {
             String name = optName.get();
             try {
                 network.sendCreateDirRequest(name);
@@ -115,17 +147,13 @@ public class MainController implements Initializable {
 
     private void deleteRequest() {
         String str = serverListView.getSelectionModel().getSelectedItem();
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Deletion");
-        alert.setHeaderText("Deletion");
-        alert.setContentText("Are you sure?\n" + str + " will be deleted!");
-        alert.showAndWait();
-        if (alert.getResult() == ButtonType.CANCEL){
+        if (str == null) {
             return;
         }
-        if (!str.isEmpty()){
-            if (str.endsWith("[DIR]")){
-                str = str.substring(0, str.length()-6);
+        if (warning(str)) return;
+        if (!str.isEmpty()) {
+            if (str.endsWith("[DIR]")) {
+                str = str.substring(0, str.length() - 6);
             }
             try {
                 network.sendDeleteRequest(str);
@@ -133,6 +161,15 @@ public class MainController implements Initializable {
                 e.printStackTrace();
             }
         }
+    }
+
+    private boolean warning(String str) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Deletion");
+        alert.setHeaderText("Deletion");
+        alert.setContentText("Are you sure?\n" + str + " will be deleted!");
+        alert.showAndWait();
+        return alert.getResult() == ButtonType.CANCEL;
     }
 
     public void updateClientListViewStatic() {
@@ -204,6 +241,7 @@ public class MainController implements Initializable {
             input.setText(selectedFileName);
             input.requestFocus();
         }
+        System.out.println();
     }
 
     private void putMessage(String message) {
@@ -225,16 +263,16 @@ public class MainController implements Initializable {
 
     public void selectFileToDownloadMouse(MouseEvent mouseEvent) throws IOException {
         if (mouseEvent.getClickCount() == 2) {
-                getFileToDownload();
+            getFileToDownload();
         }
     }
 
     private void getFileToDownload() throws IOException {
         fileNameToDownload = serverListView.getSelectionModel().getSelectedItem();
-        if (fileNameToDownload.endsWith("[DIR]")){
-            fileNameToDownload = fileNameToDownload.substring(0, fileNameToDownload.length()-6);
+        if (fileNameToDownload.endsWith("[DIR]")) {
+            fileNameToDownload = fileNameToDownload.substring(0, fileNameToDownload.length() - 6);
             download();
-        }else {
+        } else {
             output.setText(fileNameToDownload);
             output.requestFocus();
         }
@@ -245,7 +283,7 @@ public class MainController implements Initializable {
             getFileToDownload();
         } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
             getServerParent();
-        }else if (keyEvent.getCode() == KeyCode.DELETE){
+        } else if (keyEvent.getCode() == KeyCode.DELETE) {
             deleteRequest();
         }
     }
@@ -275,7 +313,7 @@ public class MainController implements Initializable {
         }
     }
 
-    public void getServerParent(){
+    public void getServerParent() {
         try {
             network.sendUpRequest();
         } catch (IOException e) {
@@ -288,6 +326,10 @@ public class MainController implements Initializable {
         output.clear();
         fileNameToDownload = null;
         serverListView.requestFocus();
+    }
+
+    public Path getCurrentPath() {
+        return currentPath;
     }
 }
 

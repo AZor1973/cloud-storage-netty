@@ -88,7 +88,7 @@ public class Network {
             UploadFileCommandData data = (UploadFileCommandData) command.getData();
             String fileName = data.getFileName();
             long fileSize = data.getFileSize();
-            Path path = Path.of(fileName);
+            Path path = App.INSTANCE.getMainController().getCurrentPath().resolve(fileName);
             if (!Files.exists(path)) {
                 Files.createFile(path);
                 Files.write(path, data.getBytes(), StandardOpenOption.CREATE,
