@@ -258,6 +258,9 @@ public class MainController implements Initializable {
 //            fis.close();   // does not work
         }
         selectedFileName = clientListView.getSelectionModel().getSelectedItem();
+        if (selectedFileName.endsWith("[DIR]")){
+            selectedFileName = selectedFileName.substring(0, fileNameToDownload.length() - 6);
+        }
         selectedFilePath = Path.of(String.valueOf(currentPath), selectedFileName);
         if (Files.isDirectory(selectedFilePath)) {
             currentPath = selectedFilePath;
