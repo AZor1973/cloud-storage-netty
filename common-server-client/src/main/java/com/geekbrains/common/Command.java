@@ -74,4 +74,11 @@ public class Command implements Serializable {
         command.type = CommandType.UP_REQUEST;
         return command;
     }
+
+    public static Command deleteRequestCommand(String fileName) {
+        Command command = new Command();
+        command.type = CommandType.DELETE_REQUEST;
+        command.data = new DeleteRequestCommandData(fileName);
+        return command;
+    }
 }

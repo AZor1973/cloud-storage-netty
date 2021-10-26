@@ -91,6 +91,21 @@ public class MainController implements Initializable {
         serverContextMenu.getItems().add(menuItem6);
         menuItem1.setOnAction(event -> moveToParent());
         menuItem4.setOnAction(event -> getServerParent());
+        menuItem5.setOnAction(event -> deleteRequest());
+    }
+
+    private void deleteRequest() {
+        String str = serverListView.getSelectionModel().getSelectedItem();
+        if (!str.isEmpty()){
+            if (str.endsWith("[DIR]")){
+                str = str.substring(0, str.length()-6);
+            }
+            try {
+                network.sendDeleteRequest(str);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     public void updateClientListViewStatic() {
@@ -183,14 +198,19 @@ public class MainController implements Initializable {
 
     public void selectFileToDownloadMouse(MouseEvent mouseEvent) throws IOException {
         if (mouseEvent.getClickCount() == 2) {
-            getFileToDownload();
+                getFileToDownload();
         }
     }
 
-    private void getFileToDownload() {
+    private void getFileToDownload() throws IOException {
         fileNameToDownload = serverListView.getSelectionModel().getSelectedItem();
-        output.setText(fileNameToDownload);
-        output.requestFocus();
+        if (fileNameToDownload.endsWith("[DIR]")){
+            fileNameToDownload = fileNameToDownload.substring(0, fileNameToDownload.length()-6);
+            download();
+        }else {
+            output.setText(fileNameToDownload);
+            output.requestFocus();
+        }
     }
 
     public void selectFileToDownloadKey(KeyEvent keyEvent) throws IOException {
@@ -232,10 +252,6 @@ public class MainController implements Initializable {
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    public void getClientParent() {
-        moveToParent();
     }
 
     public void download() throws IOException {

@@ -10,6 +10,7 @@ public enum CommandType {
     UPDATE_FILE_LIST,
     FILE_REQUEST,
     UP_REQUEST,
+    DELETE_REQUEST,
     END,
     DOWNLOAD_FILE,
     UPLOAD_FILE,

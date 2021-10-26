@@ -1,14 +1,13 @@
 package com.geekbrains.server;
 
 import com.geekbrains.common.Command;
-import com.geekbrains.common.commands.AuthCommandData;
-import com.geekbrains.common.commands.FileRequestCommandData;
-import com.geekbrains.common.commands.RegCommandData;
-import com.geekbrains.common.commands.UploadFileCommandData;
+import com.geekbrains.common.commands.*;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -32,7 +31,26 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             case REG -> registrationNewUser(ctx, msg);
             case FILE_REQUEST -> fileDownload(ctx, msg);
             case UP_REQUEST -> toFolderAbove(ctx);
+            case DELETE_REQUEST -> deleteFile(ctx, msg);
         }
+    }
+
+    private void deleteFile(ChannelHandlerContext ctx, Command msg) throws IOException {
+        DeleteRequestCommandData data = (DeleteRequestCommandData) msg.getData();
+        String fileNameToDelete = data.getFileName();
+        Path path = pathDir.resolve(fileNameToDelete);
+        if (!Files.exists(path)) {
+            ctx.writeAndFlush(Command.errorCommand(fileNameToDelete + " does not exist"));
+        } else {
+            if (Files.isDirectory(path)) {
+                FileUtils.forceDelete(new File(String.valueOf(path)));
+            } else {
+                Files.delete(path);
+                ctx.writeAndFlush(Command.infoCommand(fileNameToDelete + " deleted."));
+                log.debug(fileNameToDelete + " deleted.");
+            }
+        }
+        updateFileList(ctx, pathDir);
     }
 
     private void toFolderAbove(ChannelHandlerContext ctx) throws IOException {
@@ -137,6 +155,15 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     private void updateFileList(ChannelHandlerContext ctx, Path path) throws IOException {
-        ctx.writeAndFlush(Command.updateFileListCommand(Files.list(path).map(p -> p.getFileName().toString()).collect(Collectors.toList())));
+        ctx.writeAndFlush(Command.updateFileListCommand(Files.list(path)
+                .map(this::toStringWithDir)
+                .collect(Collectors.toList())));
+    }
+
+    public String toStringWithDir(Path path) {
+        if (Files.isDirectory(path)) {
+            return path.getFileName().toString() + " [DIR]";
+        }
+        return path.getFileName().toString();
     }
 }

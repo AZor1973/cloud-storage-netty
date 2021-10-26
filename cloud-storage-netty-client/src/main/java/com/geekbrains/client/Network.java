@@ -149,4 +149,8 @@ public class Network {
     public void sendUpRequest() throws IOException {
         sendCommand(Command.upRequestCommand());
     }
+
+    public void sendDeleteRequest(String fileName) throws IOException {
+        sendCommand(Command.deleteRequestCommand(fileName));
+    }
 }

@@ -65,4 +65,8 @@ public class RegController {
             nickField.requestFocus();
         }
     }
+
+    public void nickFocus(){
+        nickField.requestFocus();
+    }
 }

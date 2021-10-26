@@ -7,8 +7,6 @@ import javafx.scene.Scene;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
-import java.awt.event.WindowEvent;
-import java.beans.EventHandler;
 import java.io.IOException;
 
 public class App extends Application {
@@ -44,7 +42,7 @@ public class App extends Application {
         return authStage;
     }
 
-    public Stage getRegStage(){
+    public Stage getRegStage() {
         return regStage;
     }
 
@@ -54,6 +52,10 @@ public class App extends Application {
 
     public MainController getMainController() {
         return mainLoader.getController();
+    }
+
+    public RegController getRegController() {
+        return regLoader.getController();
     }
 
     private void initViews() throws IOException {
@@ -78,6 +80,7 @@ public class App extends Application {
         authStage.initModality(Modality.WINDOW_MODAL);
         authStage.setScene(new Scene(authDialogPanel));
         authStage.setResizable(false);
+        getAuthController().loginFocus();
         authStage.setOnCloseRequest(we -> primaryStage.close());
     }
 
@@ -90,6 +93,7 @@ public class App extends Application {
         regStage.initModality(Modality.WINDOW_MODAL);
         regStage.setScene(new Scene(regPanel));
         regStage.setResizable(false);
+        getRegController().nickFocus();
         regStage.show();
     }
 
