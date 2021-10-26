@@ -18,8 +18,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.PreparedStatement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,6 +42,7 @@ public class MainController implements Initializable {
     public ListView<String> serverListView;
     @FXML
     public ListView<String> clientListView;
+    public ComboBox<String> disksBox;
     private Network network;
     private List<String> fileListClient;
     private String selectedFileName;
@@ -69,7 +72,13 @@ public class MainController implements Initializable {
         menuItem4 = new MenuItem("Go to parent directory");
         menuItem5 = new MenuItem("Delete");
         menuItem6 = new MenuItem("Create new directory");
-        currentPath = Path.of(System.getProperty("user.dir"));
+        disksBox.getItems().clear();
+        for (Path p : FileSystems.getDefault().getRootDirectories()) {
+            disksBox.getItems().add(p.toString());
+        }
+        disksBox.getSelectionModel().select(0);
+        currentPath = Path.of(disksBox.getSelectionModel().getSelectedItem());
+//        currentPath = Path.of(System.getProperty("user.dir"));
         updateClientListView(currentPath);
         network = Network.getInstance();
         network.connect();
@@ -128,8 +137,8 @@ public class MainController implements Initializable {
         if (str == null) {
             return;
         }
-        if (str.endsWith("[DIR]")){
-            str = str.substring(0, str.length()-6);
+        if (str.endsWith("[DIR]")) {
+            str = str.substring(0, str.length() - 6);
         }
         if (warning(str)) return;
         Path path = currentPath.resolve(str);
@@ -140,7 +149,7 @@ public class MainController implements Initializable {
                 alert.setHeaderText("Deleting a directory");
                 alert.setContentText("Are you sure?\n" + str + " will be deleted with all files inside!");
                 alert.showAndWait();
-                if (alert.getResult() == ButtonType.CANCEL){
+                if (alert.getResult() == ButtonType.CANCEL) {
                     return;
                 }
                 FileUtils.forceDelete(new File(String.valueOf(path)));
@@ -261,8 +270,8 @@ public class MainController implements Initializable {
 //            fis.close();   // does not work
         }
         selectedFileName = clientListView.getSelectionModel().getSelectedItem();
-        if (selectedFileName.endsWith("[DIR]")){
-            selectedFileName = selectedFileName.substring(0, selectedFileName.length()-6);
+        if (selectedFileName.endsWith("[DIR]")) {
+            selectedFileName = selectedFileName.substring(0, selectedFileName.length() - 6);
         }
         selectedFilePath = Path.of(String.valueOf(currentPath), selectedFileName);
         if (Files.isDirectory(selectedFilePath)) {
@@ -365,6 +374,11 @@ public class MainController implements Initializable {
 
     public Path getCurrentPath() {
         return currentPath;
+    }
+
+    public void selectDiskAction() {
+        currentPath = Path.of(disksBox.getSelectionModel().getSelectedItem());
+        updateClientListView(currentPath);
     }
 }
 

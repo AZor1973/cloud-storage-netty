@@ -6,7 +6,7 @@
 <?import javafx.scene.text.*?>
 
 <AnchorPane prefHeight="600" prefWidth="800" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.MainController">
-   <HBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+   <HBox alignment="CENTER" layoutY="-8.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-8.0">
       <padding>
          <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
       </padding>
@@ -18,13 +18,14 @@
             </font>
          </TextField>
       </VBox>
-      <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
+      <VBox alignment="TOP_RIGHT" HBox.hgrow="ALWAYS">
          <HBox.margin>
             <Insets left="20.0" right="20.0" />
          </HBox.margin>
          <opaqueInsets>
             <Insets />
          </opaqueInsets>
+         <ComboBox fx:id="disksBox" onAction="#selectDiskAction" prefHeight="26.0" prefWidth="78.0" />
          <Button fx:id="uploadButton" mnemonicParsing="false" onAction="#upload" text="&lt;&lt;">
             <font>
                <Font size="20.0" />
@@ -33,7 +34,7 @@
                <Insets />
             </opaqueInsets>
             <VBox.margin>
-               <Insets bottom="10.0" />
+               <Insets bottom="10.0" right="35.0" top="200.0" />
             </VBox.margin>
          </Button>
          <Button fx:id="downloadButton" mnemonicParsing="false" onAction="#download" text="&gt;&gt;">
@@ -41,11 +42,11 @@
                <Font size="20.0" />
             </font>
             <VBox.margin>
-               <Insets top="10.0" />
+               <Insets right="35.0" top="10.0" />
             </VBox.margin>
          </Button>
       </VBox>
-      <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
+      <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
          <HBox.margin>
             <Insets />
          </HBox.margin>
