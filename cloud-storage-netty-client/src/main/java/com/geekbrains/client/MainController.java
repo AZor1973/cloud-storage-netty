@@ -96,9 +96,31 @@ public class MainController implements Initializable {
         serverContextMenu.getItems().add(menuItem6);
         menuItem1.setOnAction(event -> moveToParent());
         menuItem2.setOnAction(event -> deleteFile());
+        menuItem3.setOnAction(event -> createDir());
         menuItem4.setOnAction(event -> getServerParent());
         menuItem5.setOnAction(event -> deleteRequest());
         menuItem6.setOnAction(event -> createDirRequest());
+    }
+
+    private void createDir() {
+        TextInputDialog editDialog = new TextInputDialog("Enter directory name");
+        editDialog.setTitle("Create a directory");
+        editDialog.setHeaderText("Enter directory name");
+        editDialog.setContentText("Directory name:");
+        Optional<String> optName = editDialog.showAndWait();
+        if (optName.isPresent()) {
+            String name = optName.get();
+            Path path = currentPath.resolve(name);
+            if (!Files.exists(path)) {
+                try {
+                    Files.createDirectory(path);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            updateClientListView(currentPath);
+            putMessage(name + " created");
+        }
     }
 
     private void deleteFile() {
@@ -180,11 +202,18 @@ public class MainController implements Initializable {
         clientListView.getItems().clear();
         fileListClient = new ArrayList<>();
         try {
-            fileListClient.addAll(Files.list(path).map(p -> p.getFileName().toString()).collect(Collectors.toList()));
+            fileListClient.addAll(Files.list(path).map(this::toStringWithDir).collect(Collectors.toList()));
         } catch (IOException e) {
             e.printStackTrace();
         }
         clientListView.getItems().addAll(fileListClient);
+    }
+
+    public String toStringWithDir(Path path) {
+        if (Files.isDirectory(path)) {
+            return path.getFileName().toString() + " [DIR]";
+        }
+        return path.getFileName().toString();
     }
 
     public void updateServerListView(List<String> files) {
