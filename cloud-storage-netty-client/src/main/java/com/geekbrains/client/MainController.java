@@ -128,6 +128,9 @@ public class MainController implements Initializable {
         if (str == null) {
             return;
         }
+        if (str.endsWith("[DIR]")){
+            str = str.substring(0, str.length()-6);
+        }
         if (warning(str)) return;
         Path path = currentPath.resolve(str);
         try {
@@ -259,7 +262,7 @@ public class MainController implements Initializable {
         }
         selectedFileName = clientListView.getSelectionModel().getSelectedItem();
         if (selectedFileName.endsWith("[DIR]")){
-            selectedFileName = selectedFileName.substring(0, fileNameToDownload.length() - 6);
+            selectedFileName = selectedFileName.substring(0, selectedFileName.length()-6);
         }
         selectedFilePath = Path.of(String.valueOf(currentPath), selectedFileName);
         if (Files.isDirectory(selectedFilePath)) {
