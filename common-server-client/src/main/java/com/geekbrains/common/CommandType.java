@@ -11,6 +11,7 @@ public enum CommandType {
     FILE_REQUEST,
     UP_REQUEST,
     DELETE_REQUEST,
+    CREATE_DIR_REQUEST,
     END,
     DOWNLOAD_FILE,
     UPLOAD_FILE,

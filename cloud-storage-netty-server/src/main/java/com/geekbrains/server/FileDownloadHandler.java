@@ -32,7 +32,12 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             case FILE_REQUEST -> fileDownload(ctx, msg);
             case UP_REQUEST -> toFolderAbove(ctx);
             case DELETE_REQUEST -> deleteFile(ctx, msg);
+            case CREATE_DIR_REQUEST -> createDirectory(ctx, msg);
         }
+    }
+
+    private void createDirectory(ChannelHandlerContext ctx, Command msg) {
+
     }
 
     private void deleteFile(ChannelHandlerContext ctx, Command msg) throws IOException {

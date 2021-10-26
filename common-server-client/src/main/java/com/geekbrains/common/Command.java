@@ -81,4 +81,10 @@ public class Command implements Serializable {
         command.data = new DeleteRequestCommandData(fileName);
         return command;
     }
+
+    public static Command createDirRequestCommand() {
+        Command command = new Command();
+        command.type = CommandType.CREATE_DIR_REQUEST;
+        return command;
+    }
 }

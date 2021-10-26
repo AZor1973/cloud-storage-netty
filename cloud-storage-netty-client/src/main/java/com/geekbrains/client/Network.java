@@ -153,4 +153,8 @@ public class Network {
     public void sendDeleteRequest(String fileName) throws IOException {
         sendCommand(Command.deleteRequestCommand(fileName));
     }
+
+    public void sendCreateDirRequest() throws IOException {
+        sendCommand(Command.createDirRequestCommand());
+    }
 }

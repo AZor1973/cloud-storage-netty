@@ -92,10 +92,26 @@ public class MainController implements Initializable {
         menuItem1.setOnAction(event -> moveToParent());
         menuItem4.setOnAction(event -> getServerParent());
         menuItem5.setOnAction(event -> deleteRequest());
+        menuItem6.setOnAction(event -> createDirRequest());
+    }
+
+    private void createDirRequest() {
+
+        try {
+            network.sendCreateDirRequest();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private void deleteRequest() {
         String str = serverListView.getSelectionModel().getSelectedItem();
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setContentText("Are you sure?\n" + str + " will be deleted!");
+        alert.showAndWait();
+        if (alert.getResult() == ButtonType.CANCEL){
+            return;
+        }
         if (!str.isEmpty()){
             if (str.endsWith("[DIR]")){
                 str = str.substring(0, str.length()-6);
@@ -218,6 +234,8 @@ public class MainController implements Initializable {
             getFileToDownload();
         } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
             getServerParent();
+        }else if (keyEvent.getCode() == KeyCode.DELETE){
+            deleteRequest();
         }
     }
 
