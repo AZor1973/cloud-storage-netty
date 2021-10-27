@@ -65,7 +65,7 @@ public class App extends Application {
 
     private void initMainWindow() throws IOException {
         mainLoader = new FXMLLoader();
-        mainLoader.setLocation(App.class.getResource(MAIN_WINDOW_FXML));
+        mainLoader.setLocation(getClass().getResource(MAIN_WINDOW_FXML));
         Parent root = mainLoader.load();
         this.primaryStage.setScene(new Scene(root));
     }
@@ -73,7 +73,7 @@ public class App extends Application {
 
     private void initAuthWindow() throws IOException {
         authLoader = new FXMLLoader();
-        authLoader.setLocation(App.class.getResource(AUTH_FXML));
+        authLoader.setLocation(getClass().getResource(AUTH_FXML));
         Parent authDialogPanel = authLoader.load();
         authStage = new Stage();
         authStage.initOwner(primaryStage);
@@ -86,7 +86,7 @@ public class App extends Application {
 
     public void initRegWindow() throws IOException {
         regLoader = new FXMLLoader();
-        regLoader.setLocation(App.class.getResource(REG_FXML));
+        regLoader.setLocation(getClass().getResource(REG_FXML));
         Parent regPanel = regLoader.load();
         regStage = new Stage();
         regStage.initOwner(authStage);

@@ -18,7 +18,7 @@ import java.util.List;
 
 @Slf4j
 public class Server {
-    private static List<String> clients = new ArrayList<>();
+    private static final List<String> clients = new ArrayList<>();
     private static final Path root = Path.of("root");
 
     public Server() {
