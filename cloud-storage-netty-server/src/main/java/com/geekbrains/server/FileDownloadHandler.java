@@ -26,70 +26,13 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, Command msg) throws Exception {
         switch (msg.getType()) {
-            case FILE_UPLOAD -> fileUpload(ctx, msg);
-            case AUTH -> authentication(ctx, msg);
             case REG -> registrationNewUser(ctx, msg);
+            case AUTH -> authentication(ctx, msg);
+            case FILE_UPLOAD -> fileUpload(ctx, msg);
             case FILE_REQUEST -> fileDownload(ctx, msg);
-            case UP_REQUEST -> toFolderAbove(ctx);
+            case UP_REQUEST -> toParentDir(ctx);
             case DELETE_REQUEST -> deleteFile(ctx, msg);
             case CREATE_DIR_REQUEST -> createDirectory(ctx, msg);
-        }
-    }
-
-    private void createDirectory(ChannelHandlerContext ctx, Command msg) throws IOException {
-        CreateDirRequestCommandData data = (CreateDirRequestCommandData) msg.getData();
-        String dirName = data.getName();
-        Path path = pathDir.resolve(dirName);
-        if (!Files.exists(path)) {
-            Files.createDirectory(path);
-        }
-        updateFileList(ctx, pathDir);
-        log.debug(dirName + " created");
-        ctx.writeAndFlush(Command.infoCommand(dirName + " created"));
-    }
-
-    private void deleteFile(ChannelHandlerContext ctx, Command msg) throws IOException {
-        DeleteRequestCommandData data = (DeleteRequestCommandData) msg.getData();
-        String fileNameToDelete = data.getFileName();
-        Path path = pathDir.resolve(fileNameToDelete);
-        if (!Files.exists(path)) {
-            ctx.writeAndFlush(Command.errorCommand(fileNameToDelete + " does not exist"));
-        } else {
-            if (Files.isDirectory(path)) {
-                FileUtils.forceDelete(new File(String.valueOf(path)));
-            } else {
-                Files.delete(path);
-                ctx.writeAndFlush(Command.infoCommand(fileNameToDelete + " deleted."));
-                log.debug(fileNameToDelete + " deleted.");
-            }
-        }
-        updateFileList(ctx, pathDir);
-    }
-
-    private void toFolderAbove(ChannelHandlerContext ctx) throws IOException {
-        if (!pathDir.getParent().equals(Server.getRoot())) {
-            pathDir = pathDir.getParent();
-            updateFileList(ctx, pathDir);
-        }
-    }
-
-    private void fileDownload(ChannelHandlerContext ctx, Command msg) throws IOException {
-        FileRequestCommandData data = (FileRequestCommandData) msg.getData();
-        String fileNameToDownload = data.getFileName();
-        Path path = pathDir.resolve(fileNameToDownload);
-        if (!Files.exists(path)) {
-            ctx.writeAndFlush(Command.errorCommand(fileNameToDownload + " does not exist"));
-        } else {
-            if (Files.isDirectory(path)) {
-                pathDir = path;
-                updateFileList(ctx, path);
-            } else {
-                long fileSize = Files.size(path);
-                fis = new FileInputStream(String.valueOf(path));
-                fileBytes = new byte[(int) fileSize];
-                fis.read(fileBytes);
-                ctx.writeAndFlush(Command.uploadFileCommand(fileNameToDownload, fileSize, fileBytes));
-            }
         }
     }
 
@@ -114,11 +57,6 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             ctx.writeAndFlush(Command.authOkCommand(username));
             updateFileList(ctx, pathDir);
         }
-    }
-
-    @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) {
-        Server.removeClient(username);
     }
 
     private void authentication(ChannelHandlerContext ctx, Command msg) throws IOException {
@@ -165,6 +103,68 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             log.debug(fileName + " is already exists.");
             ctx.writeAndFlush(Command.errorCommand(fileName + " is already exists."));
         }
+    }
+
+    private void fileDownload(ChannelHandlerContext ctx, Command msg) throws IOException {
+        FileRequestCommandData data = (FileRequestCommandData) msg.getData();
+        String fileNameToDownload = data.getFileName();
+        Path path = pathDir.resolve(fileNameToDownload);
+        if (!Files.exists(path)) {
+            ctx.writeAndFlush(Command.errorCommand(fileNameToDownload + " does not exist"));
+        } else {
+            if (Files.isDirectory(path)) {
+                pathDir = path;
+                updateFileList(ctx, path);
+            } else {
+                long fileSize = Files.size(path);
+                fis = new FileInputStream(String.valueOf(path));
+                fileBytes = new byte[(int) fileSize];
+                fis.read(fileBytes);
+                ctx.writeAndFlush(Command.uploadFileCommand(fileNameToDownload, fileSize, fileBytes));
+            }
+        }
+    }
+
+    private void toParentDir(ChannelHandlerContext ctx) throws IOException {
+        if (!pathDir.getParent().equals(Server.getRoot())) {
+            pathDir = pathDir.getParent();
+            updateFileList(ctx, pathDir);
+        }
+    }
+
+    private void deleteFile(ChannelHandlerContext ctx, Command msg) throws IOException {
+        DeleteRequestCommandData data = (DeleteRequestCommandData) msg.getData();
+        String fileNameToDelete = data.getFileName();
+        Path path = pathDir.resolve(fileNameToDelete);
+        if (!Files.exists(path)) {
+            ctx.writeAndFlush(Command.errorCommand(fileNameToDelete + " does not exist"));
+        } else {
+            if (Files.isDirectory(path)) {
+                FileUtils.forceDelete(new File(String.valueOf(path)));
+            } else {
+                Files.delete(path);
+                ctx.writeAndFlush(Command.infoCommand(fileNameToDelete + " deleted."));
+                log.debug(fileNameToDelete + " deleted.");
+            }
+        }
+        updateFileList(ctx, pathDir);
+    }
+
+    private void createDirectory(ChannelHandlerContext ctx, Command msg) throws IOException {
+        CreateDirRequestCommandData data = (CreateDirRequestCommandData) msg.getData();
+        String dirName = data.getName();
+        Path path = pathDir.resolve(dirName);
+        if (!Files.exists(path)) {
+            Files.createDirectory(path);
+        }
+        updateFileList(ctx, pathDir);
+        log.debug(dirName + " created");
+        ctx.writeAndFlush(Command.infoCommand(dirName + " created"));
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) {
+        Server.removeClient(username);
     }
 
     private void updateFileList(ChannelHandlerContext ctx, Path path) throws IOException {

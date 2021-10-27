@@ -1,15 +1,12 @@
 package com.geekbrains.client;
 
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
-
 import java.io.IOException;
-import java.net.URL;
-import java.util.ResourceBundle;
 
 public class AuthController {
     @FXML
@@ -26,11 +23,7 @@ public class AuthController {
         String login = loginField.getText();
         String password = passwordField.getText();
         if (login == null || login.isBlank() || password == null || password.isBlank()) {
-            Network.getInstance().show("Fields must be filled");
-            return;
-        }
-        if (!Network.getInstance().isConnected()) {
-            Network.getInstance().show("Network error");
+            showAlert("Fields must be filled");
             return;
         }
         Network.getInstance().sendAuthMessage(login, password);
@@ -54,6 +47,12 @@ public class AuthController {
 
     public void registration() throws IOException {
         App.INSTANCE.initRegWindow();
+    }
+
+    public void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     public void loginFocus() {

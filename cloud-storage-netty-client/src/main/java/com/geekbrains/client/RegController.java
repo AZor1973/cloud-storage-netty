@@ -1,11 +1,13 @@
 package com.geekbrains.client;
 
 import javafx.fxml.FXML;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+
 import java.io.IOException;
 
 public class RegController {
@@ -23,11 +25,7 @@ public class RegController {
         String password = passwordFieldReg.getText();
         String username = nickField.getText();
         if (login == null || login.isBlank() || password == null || password.isBlank()) {
-            Network.getInstance().show("Fields must be filled");
-            return;
-        }
-        if (!Network.getInstance().isConnected()) {
-            Network.getInstance().show("Network error");
+            showAlert("Fields must be filled");
             return;
         }
         Network.getInstance().sendRegMessage(username, login, password);
@@ -45,7 +43,7 @@ public class RegController {
     public void goFromNick(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.UP) {
             passwordFieldReg.requestFocus();
-        }else if (keyEvent.getCode() == KeyCode.DOWN){
+        } else if (keyEvent.getCode() == KeyCode.DOWN) {
             loginFieldReg.requestFocus();
         }
     }
@@ -53,7 +51,7 @@ public class RegController {
     public void goFromLogin(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.UP) {
             nickField.requestFocus();
-        }else if (keyEvent.getCode() == KeyCode.DOWN){
+        } else if (keyEvent.getCode() == KeyCode.DOWN) {
             passwordFieldReg.requestFocus();
         }
     }
@@ -61,9 +59,15 @@ public class RegController {
     public void goFromPassword(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.UP) {
             loginFieldReg.requestFocus();
-        }else if (keyEvent.getCode() == KeyCode.DOWN){
+        } else if (keyEvent.getCode() == KeyCode.DOWN) {
             nickField.requestFocus();
         }
+    }
+
+    public void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     public void nickFocus(){

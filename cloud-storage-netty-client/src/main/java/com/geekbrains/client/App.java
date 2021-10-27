@@ -30,7 +30,7 @@ public class App extends Application {
     public void start(Stage primaryStage) throws IOException {
         this.primaryStage = primaryStage;
         initViews();
-        getPrimaryStage().show();
+//        getPrimaryStage().show();
         getAuthStage().show();
     }
 
@@ -98,6 +98,7 @@ public class App extends Application {
     }
 
     public void switchToMainChatWindow(String username) {
+        getPrimaryStage().show();
         getPrimaryStage().setTitle(username);
         getAuthStage().close();
     }
