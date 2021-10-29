@@ -3,13 +3,16 @@ package com.geekbrains.client;
 import com.geekbrains.common.Command;
 import com.geekbrains.common.CommandType;
 import com.geekbrains.common.commands.*;
-import io.netty.handler.codec.serialization.ObjectDecoderInputStream;
-import io.netty.handler.codec.serialization.ObjectEncoderOutputStream;
+import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.*;
+import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.socket.SocketChannel;
+import io.netty.channel.socket.nio.NioSocketChannel;
+import io.netty.handler.codec.serialization.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 import java.io.IOException;
-import java.net.Socket;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
@@ -23,8 +26,7 @@ public class Network {
     private static Network INSTANCE;
     private final String host;
     private final int port;
-    private ObjectDecoderInputStream dis;
-    private ObjectEncoderOutputStream dos;
+    private SocketChannel socketChannel;
 
     public static Network getInstance() {
         if (INSTANCE == null) {
@@ -43,35 +45,56 @@ public class Network {
     }
 
     public void connect() {
-        try {
-            Socket socket = new Socket(host, port);
-            dos = new ObjectEncoderOutputStream(socket.getOutputStream());
-            dis = new ObjectDecoderInputStream(socket.getInputStream(), Integer.MAX_VALUE);
-        } catch (IOException e) {
-            e.printStackTrace();
-            showAlert("Network error", Alert.AlertType.ERROR);
-        }
+        new Thread(() -> {
+            EventLoopGroup workerGroup = new NioEventLoopGroup();
+            try {
+                Bootstrap bootstrap = new Bootstrap();
+                bootstrap.group(workerGroup)
+                        .channel(NioSocketChannel.class)
+                        .handler(new ChannelInitializer<SocketChannel>() {
+                            @Override
+                            protected void initChannel(SocketChannel ch) {
+                                socketChannel = ch;
+                                ch.pipeline().addLast(
+                                        new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)),
+                                        new ObjectEncoder(),
+                                        new SimpleChannelInboundHandler<Command>() {
+                                            @Override
+                                            protected void channelRead0(ChannelHandlerContext ctx, Command msg) throws Exception {
+                                                readMessage(msg);
+                                            }
+                                        });
+                            }
+                        });
+                ChannelFuture future = bootstrap.connect(host, port).sync();
+                future.channel().closeFuture().sync();
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert("Network error", Alert.AlertType.ERROR);
+            }finally {
+                workerGroup.shutdownGracefully();
+            }
+        }).start();
     }
 
-    public void sendFile(String fileName, long fileSize, byte[] bytes) throws IOException {
+    public void sendFile(String fileName, long fileSize, byte[] bytes) {
         sendCommand(Command.uploadFileCommand(fileName, fileSize, bytes));
     }
 
-    public void readMessage() throws IOException {
-        Command command = readCommand();
+    public void readMessage(Command command) throws IOException {
         if (command.getType() == CommandType.INFO) {
             InfoCommandData data = (InfoCommandData) command.getData();
             Platform.runLater(() -> showAlert(data.getMessage(), Alert.AlertType.INFORMATION));
         } else if (command.getType() == CommandType.ERROR) {
             ErrorCommandData data = (ErrorCommandData) command.getData();
             String error = data.getErrorMessage();
-                Platform.runLater(() -> showAlert(error, Alert.AlertType.ERROR));
+            Platform.runLater(() -> showAlert(error, Alert.AlertType.ERROR));
         } else if (command.getType() == CommandType.AUTH_OK) {
             AuthOkCommandData data = (AuthOkCommandData) command.getData();
             String message = data.getUsername();
-            Platform.runLater(() -> App.INSTANCE.switchToMainChatWindow(message));
+            Platform.runLater(() -> App.INSTANCE.switchToMainWindow(message));
 
-        }else if (command.getType() == CommandType.UPDATE_FILE_LIST){
+        } else if (command.getType() == CommandType.UPDATE_FILE_LIST) {
             UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
             List<String> files = data.getFiles();
             Platform.runLater(() -> App.INSTANCE.getMainController().updateServerListView(files));
@@ -87,42 +110,25 @@ public class Network {
                 if (Files.size(path) == fileSize) {
                     Platform.runLater(() -> App.INSTANCE.getMainController().updateClientListViewStatic());
                     Platform.runLater(() -> showAlert(fileName + " downloaded.", Alert.AlertType.INFORMATION));
-                }else {
+                } else {
                     Files.delete(path);
                     Platform.runLater(() -> showAlert("File download error.", Alert.AlertType.ERROR));
                 }
-            }else {
+            } else {
                 Platform.runLater(() -> showAlert(fileName + " is already exists.", Alert.AlertType.ERROR));
             }
         }
     }
 
-    public Command readCommand() throws IOException {
-        Command command = null;
-        try {
-            command = (Command) dis.readObject();
-        } catch (ClassNotFoundException e) {
-            log.error("Failed to read Command class");
-            e.printStackTrace();
-        }
-        return command;
+    private void sendCommand(Command command) {
+        socketChannel.writeAndFlush(command);
     }
 
-    private void sendCommand(Command command) throws IOException {
-        try {
-            dos.writeObject(command);
-            dos.flush();
-        } catch (IOException e) {
-            System.err.println("Failed to send message to server");
-            throw e;
-        }
-    }
-
-    public void sendAuthMessage(String login, String password) throws IOException {
+    public void sendAuthMessage(String login, String password) {
         sendCommand(Command.authCommand(login, password));
     }
 
-    public void sendRegMessage(String username, String login, String password) throws IOException {
+    public void sendRegMessage(String username, String login, String password) {
         sendCommand(Command.regCommand(username, login, password));
     }
 
@@ -132,7 +138,7 @@ public class Network {
         alert.showAndWait();
     }
 
-    public void sendFileRequest(String fileNameToDownload) throws IOException {
+    public void sendFileRequest(String fileNameToDownload) {
         sendCommand(Command.fileRequestCommand(fileNameToDownload));
     }
 
@@ -146,5 +152,9 @@ public class Network {
 
     public void sendCreateDirRequest(String name) throws IOException {
         sendCommand(Command.createDirRequestCommand(name));
+    }
+
+    public void close(){
+        socketChannel.close();
     }
 }

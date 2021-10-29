@@ -24,6 +24,11 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     private byte[] fileBytes;
 
     @Override
+    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+      log.debug("Client connected");
+    }
+
+    @Override
     protected void channelRead0(ChannelHandlerContext ctx, Command msg) throws Exception {
         switch (msg.getType()) {
             case REG -> registrationNewUser(ctx, msg);
@@ -72,9 +77,6 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             this.username = username;
             Server.addClient(username);
             pathDir = Server.getRoot().resolve(username);
-            if (!Files.exists(pathDir)) {
-                Files.createDirectory(pathDir);
-            }
             ctx.writeAndFlush(Command.authOkCommand(username));
             updateFileList(ctx, pathDir);
         }
@@ -162,11 +164,6 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         ctx.writeAndFlush(Command.infoCommand(dirName + " created"));
     }
 
-    @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) {
-        Server.removeClient(username);
-    }
-
     private void updateFileList(ChannelHandlerContext ctx, Path path) throws IOException {
         ctx.writeAndFlush(Command.updateFileListCommand(Files.list(path)
                 .map(this::toStringWithDir)
@@ -178,5 +175,16 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             return path.getFileName().toString() + " [DIR]";
         }
         return path.getFileName().toString();
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) {
+        Server.removeClient(username);
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        cause.printStackTrace();
+        ctx.close();
     }
 }

@@ -64,17 +64,6 @@ public class MainController implements Initializable {
         updateClientListView(currentPath);
         network = Network.getInstance();
         network.connect();
-        Thread readThread = new Thread(() -> {
-            try {
-                while (true) {
-                   network.readMessage();
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        });
-        readThread.setDaemon(true);
-        readThread.start();
         clientListView.setContextMenu(clientContextMenu);
         serverListView.setContextMenu(serverContextMenu);
         clientContextMenu.getItems().add(parentDirClientItem);
@@ -122,18 +111,11 @@ public class MainController implements Initializable {
         if (str.endsWith("[DIR]")) {
             str = str.substring(0, str.length() - 6);
         }
-        if (deleteAlert(str)) return;
+        if (deleteFileAlert(str)) return;
         Path path = currentPath.resolve(str);
         try {
             if (Files.isDirectory(path)) {
-                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-                alert.setTitle("Deleting a directory");
-                alert.setHeaderText("Deleting a directory");
-                alert.setContentText("Are you sure?\n" + str + " will be deleted with all files inside!");
-                alert.showAndWait();
-                if (alert.getResult() == ButtonType.CANCEL) {
-                    return;
-                }
+                if (deleteDirAlert(str)) return;
                 FileUtils.forceDelete(new File(String.valueOf(path)));
             } else {
                 Files.delete(path);
@@ -143,6 +125,24 @@ public class MainController implements Initializable {
         }
         updateClientListView(currentPath);
         putMessage(str + " deleted.");
+    }
+
+    private boolean deleteDirAlert(String str) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Deleting a directory");
+        alert.setHeaderText("Deleting a directory");
+        alert.setContentText("Are you sure?\n" + str + " will be deleted with all files inside!");
+        alert.showAndWait();
+        return alert.getResult() == ButtonType.CANCEL;
+    }
+
+    private boolean deleteFileAlert(String str) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle("Deletion");
+        alert.setHeaderText("Deletion");
+        alert.setContentText("Are you sure?\n" + str + " will be deleted!");
+        alert.showAndWait();
+        return alert.getResult() == ButtonType.CANCEL;
     }
 
     private void createDir() {
@@ -179,10 +179,11 @@ public class MainController implements Initializable {
         if (str == null) {
             return;
         }
-        if (deleteAlert(str)) return;
+        if (deleteFileAlert(str)) return;
         if (!str.isEmpty()) {
             if (str.endsWith("[DIR]")) {
                 str = str.substring(0, str.length() - 6);
+                if (deleteDirAlert(str)) return;
             }
             try {
                 network.sendDeleteRequest(str);
@@ -208,14 +209,6 @@ public class MainController implements Initializable {
         }
     }
 
-    private boolean deleteAlert(String str) {
-        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-        alert.setTitle("Deletion");
-        alert.setHeaderText("Deletion");
-        alert.setContentText("Are you sure?\n" + str + " will be deleted!");
-        alert.showAndWait();
-        return alert.getResult() == ButtonType.CANCEL;
-    }
 
     public void updateClientListViewStatic() {
         updateClientListView(currentPath);
@@ -282,7 +275,7 @@ public class MainController implements Initializable {
         System.out.println();
     }
 
-    public void upload() throws IOException {
+    public void upload() {
         if (fis != null) {
             network.sendFile(selectedFileName, selectedFileSize, selectedFileBytes);
             input.clear();
@@ -294,13 +287,13 @@ public class MainController implements Initializable {
         }
     }
 
-    public void selectFileToDownloadMouse(MouseEvent mouseEvent) throws IOException {
+    public void selectFileToDownloadMouse(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() == 2) {
             getFileToDownload();
         }
     }
 
-    public void selectFileToDownloadKey(KeyEvent keyEvent) throws IOException {
+    public void selectFileToDownloadKey(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER) {
             getFileToDownload();
         } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
@@ -310,7 +303,7 @@ public class MainController implements Initializable {
         }
     }
 
-    private void getFileToDownload() throws IOException {
+    private void getFileToDownload() {
         fileNameToDownload = serverListView.getSelectionModel().getSelectedItem();
         if (fileNameToDownload.endsWith("[DIR]")) {
             fileNameToDownload = fileNameToDownload.substring(0, fileNameToDownload.length() - 6);
@@ -321,7 +314,7 @@ public class MainController implements Initializable {
         }
     }
 
-    public void download() throws IOException {
+    public void download() {
         network.sendFileRequest(fileNameToDownload);
         output.clear();
         fileNameToDownload = null;

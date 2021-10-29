@@ -6,7 +6,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyEvent;
-import java.io.IOException;
 
 public class AuthController {
     @FXML
@@ -19,7 +18,7 @@ public class AuthController {
     private PasswordField passwordField;
 
     @FXML
-    public void executeAuth() throws IOException {
+    public void executeAuth() {
         String login = loginField.getText();
         String password = passwordField.getText();
         if (login == null || login.isBlank() || password == null || password.isBlank()) {
@@ -33,20 +32,37 @@ public class AuthController {
         passwordField.requestFocus();
     }
 
-    public void goToPassword(KeyEvent keyEvent) {
-        if (keyEvent.getCode().isArrowKey()) {
-            passwordField.requestFocus();
+    public void goFromLogin(KeyEvent keyEvent) {
+        switch (keyEvent.getCode()){
+            case UP -> regButton.requestFocus();
+            case DOWN -> passwordField.requestFocus();
         }
     }
 
-    public void goToLogin(KeyEvent keyEvent) {
-        if (keyEvent.getCode().isArrowKey()) {
-            loginField.requestFocus();
+    public void goFromPassword(KeyEvent keyEvent) {
+        switch (keyEvent.getCode()){
+            case UP -> loginField.requestFocus();
+            case DOWN -> authButton.requestFocus();
         }
     }
 
-    public void registration() throws IOException {
-        App.INSTANCE.initRegWindow();
+    public void goFromEnter(KeyEvent keyEvent) {
+        switch (keyEvent.getCode()){
+            case UP -> passwordField.requestFocus();
+            case DOWN, LEFT -> regButton.requestFocus();
+        }
+    }
+
+    public void goFromReg(KeyEvent keyEvent) {
+        switch (keyEvent.getCode()){
+            case UP -> passwordField.requestFocus();
+            case DOWN -> loginField.requestFocus();
+            case RIGHT -> authButton.requestFocus();
+        }
+    }
+
+    public void registration() {
+        App.INSTANCE.getRegStage().show();
     }
 
     public void showAlert(String message) {

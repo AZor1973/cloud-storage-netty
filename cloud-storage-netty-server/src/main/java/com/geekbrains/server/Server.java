@@ -20,6 +20,8 @@ import java.util.List;
 public class Server {
     private static final List<String> clients = new ArrayList<>();
     private static final Path root = Path.of("root");
+    private static final int SERVER_PORT = 8189;
+
 
     public Server() {
         EventLoopGroup auth = new NioEventLoopGroup(1);
@@ -38,7 +40,7 @@ public class Server {
                             );
                         }
                     });
-            ChannelFuture future = bootstrap.bind(8189).sync();
+            ChannelFuture future = bootstrap.bind(SERVER_PORT).sync();
             log.debug("Server started...");
             if (!Files.exists(root)) {
                 Files.createDirectory(root);
