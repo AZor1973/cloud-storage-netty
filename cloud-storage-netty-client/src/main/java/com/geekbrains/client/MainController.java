@@ -40,10 +40,7 @@ public class MainController implements Initializable {
     public ComboBox<String> disksBox;
     private Network network;
     private String selectedFileName;
-    private long selectedFileSize;
     private Path selectedFilePath;
-    private FileInputStream fis;
-    private byte[] selectedFileBytes;
     private Path currentPath;
     private String fileNameToDownload;
 
@@ -257,16 +254,15 @@ public class MainController implements Initializable {
 
     public void upload() throws IOException {
         if (!input.getText().isBlank()) {
-            selectedFileSize = Files.size(selectedFilePath);
-            fis = new FileInputStream(String.valueOf(selectedFilePath));
-            selectedFileBytes = new byte[(int) selectedFileSize];
+            long selectedFileSize = Files.size(selectedFilePath);
+            FileInputStream fis = new FileInputStream(String.valueOf(selectedFilePath));
+            byte[] selectedFileBytes = new byte[(int) selectedFileSize];
             fis.read(selectedFileBytes);
             network.sendFile(selectedFileName, selectedFileSize, selectedFileBytes);
             input.clear();
             fis.close();
             selectedFilePath = null;
             selectedFileName = null;
-            selectedFileSize = 0;
             clientListView.requestFocus();
         }
     }

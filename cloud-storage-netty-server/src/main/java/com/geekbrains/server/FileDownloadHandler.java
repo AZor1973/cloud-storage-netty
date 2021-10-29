@@ -20,11 +20,9 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     private final DatabaseService ds = new DatabaseService();
     private String username;
     private Path pathDir;
-    private FileInputStream fis;
-    private byte[] fileBytes;
 
     @Override
-    public void channelActive(ChannelHandlerContext ctx) throws Exception {
+    public void channelActive(ChannelHandlerContext ctx) {
       log.debug("Client connected");
     }
 
@@ -119,8 +117,8 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
                 updateFileList(ctx, pathDir);
             } else {
                 long fileSize = Files.size(path);
-                fis = new FileInputStream(String.valueOf(path));
-                fileBytes = new byte[(int) fileSize];
+                FileInputStream fis = new FileInputStream(String.valueOf(path));
+                byte[] fileBytes = new byte[(int) fileSize];
                 fis.read(fileBytes);
                 ctx.writeAndFlush(Command.fileInfoCommand(fileNameToDownload, fileSize, fileBytes));
                 fis.close();
@@ -184,7 +182,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
         cause.printStackTrace();
         ctx.close();
     }
