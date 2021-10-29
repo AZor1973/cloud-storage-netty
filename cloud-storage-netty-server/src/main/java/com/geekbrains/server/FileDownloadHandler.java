@@ -116,7 +116,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         } else {
             if (Files.isDirectory(path)) {
                 pathDir = path;
-                updateFileList(ctx, path);
+                updateFileList(ctx, pathDir);
             } else {
                 long fileSize = Files.size(path);
                 fis = new FileInputStream(String.valueOf(path));
