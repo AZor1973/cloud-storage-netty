@@ -8,7 +8,7 @@ import java.io.Serializable;
 
 @AllArgsConstructor
 @Getter
-public class UploadFileCommandData implements Serializable {
+public class FileInfoCommandData implements Serializable {
     @Serial
     private static final long serialVersionUID = 8128138402141926015L;
     private String fileName;

@@ -45,7 +45,7 @@ public class Network {
     }
 
     public void connect() {
-        new Thread(() -> {
+       Thread thread = new Thread(() -> {
             EventLoopGroup workerGroup = new NioEventLoopGroup();
             try {
                 Bootstrap bootstrap = new Bootstrap();
@@ -74,11 +74,9 @@ public class Network {
             }finally {
                 workerGroup.shutdownGracefully();
             }
-        }).start();
-    }
-
-    public void sendFile(String fileName, long fileSize, byte[] bytes) {
-        sendCommand(Command.uploadFileCommand(fileName, fileSize, bytes));
+        });
+       thread.setDaemon(true);
+       thread.start();
     }
 
     public void readMessage(Command command) throws IOException {
@@ -98,30 +96,32 @@ public class Network {
             UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
             List<String> files = data.getFiles();
             Platform.runLater(() -> App.INSTANCE.getMainController().updateServerListView(files));
-        } else if (command.getType() == CommandType.FILE_UPLOAD) {
-            UploadFileCommandData data = (UploadFileCommandData) command.getData();
+        } else if (command.getType() == CommandType.FILE_INFO) {
+            FileInfoCommandData data = (FileInfoCommandData) command.getData();
             String fileName = data.getFileName();
             long fileSize = data.getFileSize();
-            Path path = App.INSTANCE.getMainController().getCurrentPath().resolve(fileName);
-            if (!Files.exists(path)) {
-                Files.createFile(path);
-                Files.write(path, data.getBytes(), StandardOpenOption.CREATE,
-                        StandardOpenOption.WRITE, StandardOpenOption.APPEND);
-                if (Files.size(path) == fileSize) {
-                    Platform.runLater(() -> App.INSTANCE.getMainController().updateClientListViewStatic());
-                    Platform.runLater(() -> showAlert(fileName + " downloaded.", Alert.AlertType.INFORMATION));
-                } else {
-                    Files.delete(path);
-                    Platform.runLater(() -> showAlert("File download error.", Alert.AlertType.ERROR));
+            Platform.runLater(() -> {
+                try {
+                    App.INSTANCE.getMainController().download(fileName, fileSize, data.getBytes());
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
-            } else {
-                Platform.runLater(() -> showAlert(fileName + " is already exists.", Alert.AlertType.ERROR));
-            }
+            });
         }
+    }
+
+    public void showAlert(String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setContentText(message);
+        alert.showAndWait();
     }
 
     private void sendCommand(Command command) {
         socketChannel.writeAndFlush(command);
+    }
+
+    public void sendFile(String fileName, long fileSize, byte[] bytes) {
+        sendCommand(Command.fileInfoCommand(fileName, fileSize, bytes));
     }
 
     public void sendAuthMessage(String login, String password) {
@@ -130,12 +130,6 @@ public class Network {
 
     public void sendRegMessage(String username, String login, String password) {
         sendCommand(Command.regCommand(username, login, password));
-    }
-
-    public void showAlert(String message, Alert.AlertType type) {
-        Alert alert = new Alert(type);
-        alert.setContentText(message);
-        alert.showAndWait();
     }
 
     public void sendFileRequest(String fileNameToDownload) {

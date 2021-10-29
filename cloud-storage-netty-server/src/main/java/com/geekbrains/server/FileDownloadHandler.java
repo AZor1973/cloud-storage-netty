@@ -33,7 +33,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         switch (msg.getType()) {
             case REG -> registrationNewUser(ctx, msg);
             case AUTH -> authentication(ctx, msg);
-            case FILE_UPLOAD -> fileUpload(ctx, msg);
+            case FILE_INFO -> fileUpload(ctx, msg);
             case FILE_REQUEST -> fileDownload(ctx, msg);
             case UP_REQUEST -> toParentDir(ctx);
             case DELETE_REQUEST -> deleteFile(ctx, msg);
@@ -83,7 +83,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     private void fileUpload(ChannelHandlerContext ctx, Command msg) throws IOException {
-        UploadFileCommandData data = (UploadFileCommandData) msg.getData();
+        FileInfoCommandData data = (FileInfoCommandData) msg.getData();
         String fileName = data.getFileName();
         long fileSize = data.getFileSize();
         Path path = pathDir.resolve(fileName);
@@ -122,7 +122,8 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
                 fis = new FileInputStream(String.valueOf(path));
                 fileBytes = new byte[(int) fileSize];
                 fis.read(fileBytes);
-                ctx.writeAndFlush(Command.uploadFileCommand(fileNameToDownload, fileSize, fileBytes));
+                ctx.writeAndFlush(Command.fileInfoCommand(fileNameToDownload, fileSize, fileBytes));
+                fis.close();
             }
         }
     }

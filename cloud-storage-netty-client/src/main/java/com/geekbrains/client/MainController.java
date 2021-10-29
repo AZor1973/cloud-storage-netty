@@ -8,6 +8,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -15,6 +16,7 @@ import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -104,6 +106,17 @@ public class MainController implements Initializable {
     }
 
     private void deleteFile() {
+        try {
+            if (fis != null) {
+                input.clear();
+                fis.close();
+                selectedFilePath = null;
+                selectedFileName = null;
+                selectedFileSize = 0;
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
         String str = clientListView.getSelectionModel().getSelectedItem();
         if (str == null) {
             return;
@@ -124,7 +137,7 @@ public class MainController implements Initializable {
             e.printStackTrace();
         }
         updateClientListView(currentPath);
-        putMessage(str + " deleted.");
+        showAlert(str + " deleted.", Alert.AlertType.INFORMATION);
     }
 
     private boolean deleteDirAlert(String str) {
@@ -209,11 +222,6 @@ public class MainController implements Initializable {
         }
     }
 
-
-    public void updateClientListViewStatic() {
-        updateClientListView(currentPath);
-    }
-
     public void updateClientListView(Path path) {
         clientListView.getItems().clear();
         List<String> fileListClient = new ArrayList<>();
@@ -253,8 +261,7 @@ public class MainController implements Initializable {
 
     private void getFileToUpload() throws IOException {
         if (fis != null) {
-            fis = null;
-//            fis.close();   // does not work
+            fis.close();
         }
         selectedFileName = clientListView.getSelectionModel().getSelectedItem();
         if (selectedFileName.endsWith("[DIR]")) {
@@ -275,12 +282,11 @@ public class MainController implements Initializable {
         System.out.println();
     }
 
-    public void upload() {
-        if (fis != null) {
+    public void upload() throws IOException {
+        if (fis != null || !input.getText().isBlank()) {
             network.sendFile(selectedFileName, selectedFileSize, selectedFileBytes);
             input.clear();
-//            fis.close();  // does not work
-            fis = null;
+            fis.close();
             selectedFileName = null;
             selectedFileSize = 0;
             clientListView.requestFocus();
@@ -307,31 +313,59 @@ public class MainController implements Initializable {
         fileNameToDownload = serverListView.getSelectionModel().getSelectedItem();
         if (fileNameToDownload.endsWith("[DIR]")) {
             fileNameToDownload = fileNameToDownload.substring(0, fileNameToDownload.length() - 6);
-            download();
+            downloadRequest();
         } else {
             output.setText(fileNameToDownload);
             output.requestFocus();
         }
     }
 
-    public void download() {
-        network.sendFileRequest(fileNameToDownload);
-        output.clear();
+    @FXML
+    private void downloadRequest() {
+        if (!output.getText().isBlank()){
+            network.sendFileRequest(fileNameToDownload);
+            output.clear();
+        }
         fileNameToDownload = null;
         serverListView.requestFocus();
     }
+
+    public void download(String fileName, long fileSize, byte[] bytes) throws IOException {
+        Path path = currentPath.resolve(fileName);
+        if (!Files.exists(path)) {
+            Files.createFile(path);
+            Files.write(path, bytes, StandardOpenOption.CREATE,
+                    StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+            if (Files.size(path) == fileSize) {
+                updateClientListView(currentPath);
+                showAlert(fileName + " downloaded.", Alert.AlertType.INFORMATION);
+            } else {
+                Files.delete(path);
+                showAlert("File download error.", Alert.AlertType.ERROR);
+            }
+        } else {
+            showAlert(fileName + " is already exists.", Alert.AlertType.ERROR);
+        }
+    }
+
+    private void showAlert(String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
 
     private void putMessage(String message) {
         input.clear();
         input.setText(message);
     }
 
-    public void keyHandleInput(KeyEvent keyEvent) {
+    public void keyHandleInput(KeyEvent keyEvent) throws IOException {
         if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
             if (fis != null) {
                 input.clear();
-//            fis.close(); // does not work
-                fis = null;
+                fis.close();
+                selectedFilePath = null;
                 selectedFileName = null;
                 selectedFileSize = 0;
                 clientListView.requestFocus();
@@ -349,10 +383,6 @@ public class MainController implements Initializable {
         } else if (keyEvent.getCode() == KeyCode.RIGHT) {
             input.requestFocus();
         }
-    }
-
-    public Path getCurrentPath() {
-        return currentPath;
     }
 }
 

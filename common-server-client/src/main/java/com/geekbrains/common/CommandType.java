@@ -4,7 +4,7 @@ public enum CommandType {
     AUTH,
     AUTH_OK,
     ERROR,
-    FILE_UPLOAD,
+    FILE_INFO,
     INFO,
     REG,
     UPDATE_FILE_LIST,
