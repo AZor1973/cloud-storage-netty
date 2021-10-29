@@ -7,23 +7,23 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.stream.Collectors;
 
 @Slf4j
 public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
+    private static final int BUFFER_SIZE = 8192;
     private final DatabaseService ds = new DatabaseService();
     private String username;
     private Path pathDir;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
-      log.debug("Client connected");
+        log.debug("Client connected");
     }
 
     @Override
@@ -85,24 +85,21 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         String fileName = data.getFileName();
         long fileSize = data.getFileSize();
         Path path = pathDir.resolve(fileName);
-        if (!Files.exists(path)) {
-            Files.createFile(path);
-            Files.write(path, data.getBytes(), StandardOpenOption.CREATE,
-                    StandardOpenOption.WRITE, StandardOpenOption.APPEND);
-            log.debug("received: {}", fileName);
-            if (Files.size(path) == fileSize) {
-                log.debug("wrote: {}", fileName);
-                ctx.writeAndFlush(Command.infoCommand(fileName + " uploaded."));
-                updateFileList(ctx, pathDir);
-            } else {
-                Files.delete(path);
-                log.error("wrong size: {},rec.: {},wr.: {}", fileName, fileSize, Files.size(path));
-                ctx.writeAndFlush(Command.errorCommand("File upload error."));
-            }
-        } else {
-            log.debug(fileName + " is already exists.");
-            ctx.writeAndFlush(Command.errorCommand(fileName + " is already exists."));
+        if (data.isStart()) {
+            Files.deleteIfExists(path);
         }
+        FileOutputStream fos = new FileOutputStream(path.toString(), true);
+        fos.write(data.getBytes(),0, data.getEndPos());
+        System.out.println(data.getEndPos());
+        System.out.println(fileSize);
+        System.out.println(Files.size(path));
+        log.debug("received: {}", fileName);
+        log.debug("wrote: {}", fileName);
+        if (Files.size(path) == fileSize) {
+            ctx.writeAndFlush(Command.infoCommand(fileName + " uploaded."));
+            updateFileList(ctx, pathDir);
+        }
+        fos.close();
     }
 
     private void fileDownload(ChannelHandlerContext ctx, Command msg) throws IOException {
@@ -117,10 +114,14 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
                 updateFileList(ctx, pathDir);
             } else {
                 long fileSize = Files.size(path);
-                FileInputStream fis = new FileInputStream(String.valueOf(path));
-                byte[] fileBytes = new byte[(int) fileSize];
-                fis.read(fileBytes);
-                ctx.writeAndFlush(Command.fileInfoCommand(fileNameToDownload, fileSize, fileBytes));
+                FileInputStream fis = new FileInputStream(path.toString());
+                byte[] buffer = new byte[BUFFER_SIZE];
+                int readBytes;
+                boolean start = true;
+                while ((readBytes = fis.read(buffer)) != -1) {
+                    ctx.channel().writeAndFlush(Command.fileInfoCommand(fileNameToDownload, fileSize, buffer, start, readBytes));
+                    start = false;
+                }
                 fis.close();
             }
         }

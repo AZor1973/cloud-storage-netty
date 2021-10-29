@@ -53,8 +53,8 @@ public class Network {
                             protected void initChannel(SocketChannel ch) {
                                 socketChannel = ch;
                                 ch.pipeline().addLast(
-                                        new ObjectDecoder(Integer.MAX_VALUE, ClassResolvers.cacheDisabled(null)),
                                         new ObjectEncoder(),
+                                        new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
                                         new SimpleChannelInboundHandler<Command>() {
                                             @Override
                                             protected void channelRead0(ChannelHandlerContext ctx, Command msg) {
@@ -99,7 +99,7 @@ public class Network {
             long fileSize = data.getFileSize();
             Platform.runLater(() -> {
                 try {
-                    App.INSTANCE.getMainController().download(fileName, fileSize, data.getBytes());
+                    App.INSTANCE.getMainController().download(fileName, fileSize, data.getBytes(), data.isStart(), data.getEndPos());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -117,8 +117,8 @@ public class Network {
         socketChannel.writeAndFlush(command);
     }
 
-    public void sendFile(String fileName, long fileSize, byte[] bytes) {
-        sendCommand(Command.fileInfoCommand(fileName, fileSize, bytes));
+    public void sendFile(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos) {
+        sendCommand(Command.fileInfoCommand(fileName, fileSize, bytes, isStart, endPos));
     }
 
     public void sendAuthMessage(String login, String password) {

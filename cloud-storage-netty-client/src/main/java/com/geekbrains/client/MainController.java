@@ -9,9 +9,7 @@ import javafx.scene.input.MouseEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
@@ -37,6 +35,7 @@ public class MainController implements Initializable {
     public ListView<String> serverListView;
     @FXML
     public ListView<String> clientListView;
+    private static final int BUFFER_SIZE = 8192;
     public ComboBox<String> disksBox;
     private Network network;
     private String selectedFileName;
@@ -237,6 +236,8 @@ public class MainController implements Initializable {
 
     private void getFileToUpload() {
         String fileName = clientListView.getSelectionModel().getSelectedItem();
+        if (fileName == null)
+            return;
         if (fileName.endsWith("[DIR]")) {
             fileName = fileName.substring(0, fileName.length() - 6);
         }
@@ -255,10 +256,14 @@ public class MainController implements Initializable {
     public void upload() throws IOException {
         if (!input.getText().isBlank()) {
             long selectedFileSize = Files.size(selectedFilePath);
-            FileInputStream fis = new FileInputStream(String.valueOf(selectedFilePath));
-            byte[] selectedFileBytes = new byte[(int) selectedFileSize];
-            fis.read(selectedFileBytes);
-            network.sendFile(selectedFileName, selectedFileSize, selectedFileBytes);
+            FileInputStream fis = new FileInputStream(selectedFilePath.toString());
+            byte[] buffer = new byte[BUFFER_SIZE];
+            int readBytes;
+            boolean start = true;
+            while ((readBytes = fis.read(buffer)) != -1){
+                network.sendFile(selectedFileName, selectedFileSize, buffer, start, readBytes);
+                start = false;
+            }
             input.clear();
             fis.close();
             selectedFilePath = null;
@@ -285,6 +290,8 @@ public class MainController implements Initializable {
 
     private void getFileToDownload() {
         String fileName = serverListView.getSelectionModel().getSelectedItem();
+        if (fileName == null)
+            return;
         if (fileName.endsWith("[DIR]")) {
             fileName = fileName.substring(0, fileName.length() - 6);
             network.sendFileRequest(fileName);
@@ -305,22 +312,18 @@ public class MainController implements Initializable {
         serverListView.requestFocus();
     }
 
-    public void download(String fileName, long fileSize, byte[] bytes) throws IOException {
+    public void download(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos) throws IOException {
         Path path = currentPath.resolve(fileName);
-        if (!Files.exists(path)) {
-            Files.createFile(path);
-            Files.write(path, bytes, StandardOpenOption.CREATE,
-                    StandardOpenOption.WRITE, StandardOpenOption.APPEND);
+        if (isStart) {
+            Files.deleteIfExists(path);
+        }
+            FileOutputStream fos = new FileOutputStream(path.toString(), true);
+            fos.write(bytes,0, endPos);
             if (Files.size(path) == fileSize) {
                 updateClientListView(currentPath);
                 showAlert(fileName + " downloaded.", Alert.AlertType.INFORMATION);
-            } else {
-                Files.delete(path);
-                showAlert("File download error.", Alert.AlertType.ERROR);
             }
-        } else {
-            showAlert(fileName + " is already exists.", Alert.AlertType.ERROR);
-        }
+            fos.close();
     }
 
     private void showAlert(String message, Alert.AlertType type) {

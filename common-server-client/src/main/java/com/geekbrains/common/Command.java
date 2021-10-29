@@ -48,10 +48,10 @@ public class Command implements Serializable {
         return command;
     }
 
-    public static Command fileInfoCommand(String fileName, long fileSize, byte[] bytes){
+    public static Command fileInfoCommand(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos){
         Command command = new Command();
         command.type = CommandType.FILE_INFO;
-        command.data = new FileInfoCommandData(fileName, fileSize, bytes);
+        command.data = new FileInfoCommandData(fileName, fileSize, bytes, isStart, endPos);
         return command;
     }
 
