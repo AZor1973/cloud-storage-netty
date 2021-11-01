@@ -9,9 +9,7 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -119,7 +117,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
                 int readBytes;
                 boolean start = true;
                 while ((readBytes = fis.read(buffer)) != -1) {
-                    ctx.channel().writeAndFlush(Command.fileInfoCommand(fileNameToDownload, fileSize, buffer, start, readBytes));
+                    ctx.writeAndFlush(Command.fileInfoCommand(fileNameToDownload, fileSize, buffer, start, readBytes));
                     start = false;
                 }
                 fis.close();

@@ -45,6 +45,15 @@ public class MainController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        network = Network.getInstance();
+        network.connect();
+        disksBox.getItems().clear();
+        for (Path p : FileSystems.getDefault().getRootDirectories()) {
+            disksBox.getItems().add(p.toString());
+        }
+        disksBox.getSelectionModel().select(0);
+        currentPath = Path.of(disksBox.getSelectionModel().getSelectedItem());
+        updateClientListView(currentPath);
         ContextMenu clientContextMenu = new ContextMenu();
         ContextMenu serverContextMenu = new ContextMenu();
         MenuItem parentDirClientItem = new MenuItem("Go to parent directory");
@@ -53,15 +62,6 @@ public class MainController implements Initializable {
         MenuItem parentDirServerItem = new MenuItem("Go to parent directory");
         MenuItem deleteServerItem = new MenuItem("Delete");
         MenuItem newDirServerItem = new MenuItem("Create new directory");
-        disksBox.getItems().clear();
-        for (Path p : FileSystems.getDefault().getRootDirectories()) {
-            disksBox.getItems().add(p.toString());
-        }
-        disksBox.getSelectionModel().select(0);
-        currentPath = Path.of(disksBox.getSelectionModel().getSelectedItem());
-        updateClientListView(currentPath);
-        network = Network.getInstance();
-        network.connect();
         clientListView.setContextMenu(clientContextMenu);
         serverListView.setContextMenu(serverContextMenu);
         clientContextMenu.getItems().add(parentDirClientItem);

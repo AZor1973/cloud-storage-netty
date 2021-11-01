@@ -12,6 +12,7 @@ import io.netty.handler.codec.serialization.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -42,7 +43,7 @@ public class Network {
     }
 
     public void connect() {
-       Thread thread = new Thread(() -> {
+        Thread thread = new Thread(() -> {
             EventLoopGroup workerGroup = new NioEventLoopGroup();
             try {
                 Bootstrap bootstrap = new Bootstrap();
@@ -53,14 +54,15 @@ public class Network {
                             protected void initChannel(SocketChannel ch) {
                                 socketChannel = ch;
                                 ch.pipeline().addLast(
-                                        new ObjectEncoder(),
                                         new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
+                                        new ObjectEncoder(),
                                         new SimpleChannelInboundHandler<Command>() {
                                             @Override
                                             protected void channelRead0(ChannelHandlerContext ctx, Command msg) {
                                                 readMessage(msg);
                                             }
-                                        });
+                                        }
+                                );
                             }
                         });
                 ChannelFuture future = bootstrap.connect(host, port).sync();
@@ -68,12 +70,12 @@ public class Network {
             } catch (Exception e) {
                 e.printStackTrace();
                 showAlert("Network error", Alert.AlertType.ERROR);
-            }finally {
+            } finally {
                 workerGroup.shutdownGracefully();
             }
         });
-       thread.setDaemon(true);
-       thread.start();
+        thread.setDaemon(true);
+        thread.start();
     }
 
     public void readMessage(Command command) {
@@ -145,7 +147,7 @@ public class Network {
         sendCommand(Command.createDirRequestCommand(name));
     }
 
-    public void close(){
+    public void close() {
         socketChannel.close();
     }
 }
