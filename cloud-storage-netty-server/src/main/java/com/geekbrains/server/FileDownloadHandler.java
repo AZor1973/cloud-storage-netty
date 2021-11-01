@@ -10,6 +10,8 @@ import org.apache.commons.io.FileUtils;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -160,9 +162,12 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     private void updateFileList(ChannelHandlerContext ctx, Path path) throws IOException {
-        ctx.writeAndFlush(Command.updateFileListCommand(Files.list(path)
+        List<String> fileList;
+        fileList = Files.list(path)
                 .map(this::toStringWithDir)
-                .collect(Collectors.toList())));
+                .collect(Collectors.toList());
+        fileList.add(0, pathDir.toString());
+        ctx.writeAndFlush(Command.updateFileListCommand(fileList));
     }
 
     public String toStringWithDir(Path path) {

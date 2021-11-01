@@ -33,8 +33,13 @@ public class MainController implements Initializable {
     public ListView<String> serverListView;
     @FXML
     public ListView<String> clientListView;
-    private static final int BUFFER_SIZE = 8192;
+    @FXML
+    public Label currentPathLabelClient;
+    @FXML
+    public Label currentPathLabelServer;
+    @FXML
     public ComboBox<String> disksBox;
+    private static final int BUFFER_SIZE = 8192;
     private Network network;
     private String selectedFileName;
     private Path selectedFilePath;
@@ -196,6 +201,7 @@ public class MainController implements Initializable {
     }
 
     public void updateClientListView(Path path) {
+        currentPathLabelClient.setText(currentPath.toString());
         clientListView.getItems().clear();
         List<String> fileListClient = new ArrayList<>();
         try {
@@ -214,6 +220,8 @@ public class MainController implements Initializable {
     }
 
     public void updateServerListView(List<String> files) {
+        currentPathLabelServer.setText(files.get(0));
+        files.remove(0);
         serverListView.getItems().clear();
         serverListView.getItems().addAll(files);
     }
@@ -332,6 +340,9 @@ public class MainController implements Initializable {
 
     public void keyHandleInput(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
+            input.clear();
+            selectedFileName = null;
+            selectedFilePath = null;
             clientListView.requestFocus();
         } else if (keyEvent.getCode() == KeyCode.LEFT) {
             output.requestFocus();

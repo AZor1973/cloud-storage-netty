@@ -11,6 +11,7 @@
          <Insets bottom="20.0" left="20.0" right="20.0" top="20.0" />
       </padding>
       <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
+         <Label fx:id="currentPathLabelServer" VBox.vgrow="ALWAYS" />
          <ListView fx:id="serverListView" onKeyPressed="#selectFileToDownloadKey" onMouseClicked="#selectFileToDownloadMouse" VBox.vgrow="ALWAYS" />
          <TextField fx:id="output" editable="false" onAction="#downloadRequest" onKeyPressed="#keyHandleOutput" VBox.vgrow="ALWAYS">
             <font>
@@ -46,10 +47,11 @@
             </VBox.margin>
          </Button>
       </VBox>
-      <VBox alignment="CENTER_LEFT" HBox.hgrow="ALWAYS">
+      <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
          <HBox.margin>
             <Insets />
          </HBox.margin>
+         <Label fx:id="currentPathLabelClient" VBox.vgrow="ALWAYS" />
          <ListView fx:id="clientListView" onKeyPressed="#selectFileToUploadKey" onMouseClicked="#selectFileToUploadMouse" VBox.vgrow="ALWAYS" />
          <TextField fx:id="input" editable="false" onAction="#upload" onKeyPressed="#keyHandleInput" VBox.vgrow="ALWAYS">
             <font>
