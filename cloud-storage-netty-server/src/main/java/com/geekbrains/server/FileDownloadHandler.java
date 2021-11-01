@@ -6,11 +6,9 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -36,6 +34,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             case UP_REQUEST -> toParentDir(ctx);
             case DELETE_REQUEST -> deleteFile(ctx, msg);
             case CREATE_DIR_REQUEST -> createDirectory(ctx, msg);
+            case RENAME_REQUEST -> renameFile(ctx, msg);
         }
     }
 
@@ -89,7 +88,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             Files.deleteIfExists(path);
         }
         FileOutputStream fos = new FileOutputStream(path.toString(), true);
-        fos.write(data.getBytes(),0, data.getEndPos());
+        fos.write(data.getBytes(), 0, data.getEndPos());
         log.debug("received: {}", fileName);
         log.debug("wrote: {}", fileName);
         if (Files.size(path) == fileSize) {
@@ -132,7 +131,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     private void deleteFile(ChannelHandlerContext ctx, Command msg) throws IOException {
-        DeleteRequestCommandData data = (DeleteRequestCommandData) msg.getData();
+        DeleteCommandData data = (DeleteCommandData) msg.getData();
         String fileNameToDelete = data.getFileName();
         Path path = pathDir.resolve(fileNameToDelete);
         if (!Files.exists(path)) {
@@ -150,7 +149,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     private void createDirectory(ChannelHandlerContext ctx, Command msg) throws IOException {
-        CreateDirRequestCommandData data = (CreateDirRequestCommandData) msg.getData();
+        CreateDirCommandData data = (CreateDirCommandData) msg.getData();
         String dirName = data.getName();
         Path path = pathDir.resolve(dirName);
         if (!Files.exists(path)) {
@@ -159,6 +158,26 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         updateFileList(ctx, pathDir);
         log.debug(dirName + " created");
         ctx.writeAndFlush(Command.infoCommand(dirName + " created"));
+    }
+
+    private void renameFile(ChannelHandlerContext ctx, Command msg) {
+        RenameCommandData data = (RenameCommandData) msg.getData();
+        String file = data.getFile();
+        String newName = data.getNewName();
+        Path path = pathDir.resolve(file);
+        Path newPath = pathDir.resolve(newName);
+        if (!Files.exists(newPath)) {
+            try {
+                Files.move(path, path.resolveSibling(newName));
+                ctx.writeAndFlush(Command.infoCommand(file + " renamed to " + newName));
+                updateFileList(ctx, pathDir);
+            } catch (IOException e) {
+                ctx.writeAndFlush(Command.infoCommand(file + " is not non-empty directory!"));
+                e.printStackTrace();
+            }
+        } else {
+            ctx.writeAndFlush(Command.errorCommand(newName + " is already exists!"));
+        }
     }
 
     private void updateFileList(ChannelHandlerContext ctx, Path path) throws IOException {

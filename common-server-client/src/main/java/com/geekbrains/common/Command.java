@@ -78,14 +78,21 @@ public class Command implements Serializable {
     public static Command deleteRequestCommand(String fileName) {
         Command command = new Command();
         command.type = CommandType.DELETE_REQUEST;
-        command.data = new DeleteRequestCommandData(fileName);
+        command.data = new DeleteCommandData(fileName);
         return command;
     }
 
     public static Command createDirRequestCommand(String name) {
         Command command = new Command();
         command.type = CommandType.CREATE_DIR_REQUEST;
-        command.data = new CreateDirRequestCommandData(name);
+        command.data = new CreateDirCommandData(name);
+        return command;
+    }
+
+    public static Command renameRequestCommand(String file, String newName) {
+        Command command = new Command();
+        command.type = CommandType.RENAME_REQUEST;
+        command.data = new RenameCommandData(file, newName);
         return command;
     }
 }

@@ -8,6 +8,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+
 import java.io.*;
 import java.net.URL;
 import java.nio.file.FileSystems;
@@ -59,26 +60,32 @@ public class MainController implements Initializable {
         updateClientListView(currentPath);
         ContextMenu clientContextMenu = new ContextMenu();
         ContextMenu serverContextMenu = new ContextMenu();
+        clientListView.setContextMenu(clientContextMenu);
+        serverListView.setContextMenu(serverContextMenu);
         MenuItem parentDirClientItem = new MenuItem("Go to parent directory");
         MenuItem deleteClientItem = new MenuItem("Delete");
         MenuItem newDirClientItem = new MenuItem("Create new directory");
+        MenuItem renameClientItem = new MenuItem("Rename");
         MenuItem parentDirServerItem = new MenuItem("Go to parent directory");
         MenuItem deleteServerItem = new MenuItem("Delete");
         MenuItem newDirServerItem = new MenuItem("Create new directory");
-        clientListView.setContextMenu(clientContextMenu);
-        serverListView.setContextMenu(serverContextMenu);
+        MenuItem renameServerItem = new MenuItem("Rename");
         clientContextMenu.getItems().add(parentDirClientItem);
         clientContextMenu.getItems().add(deleteClientItem);
         clientContextMenu.getItems().add(newDirClientItem);
+        clientContextMenu.getItems().add(renameClientItem);
         serverContextMenu.getItems().add(parentDirServerItem);
         serverContextMenu.getItems().add(deleteServerItem);
         serverContextMenu.getItems().add(newDirServerItem);
+        serverContextMenu.getItems().add(renameServerItem);
         parentDirClientItem.setOnAction(event -> moveToParent());
         deleteClientItem.setOnAction(event -> deleteFile());
         newDirClientItem.setOnAction(event -> createDir());
+        renameClientItem.setOnAction(event -> renameFile());
         parentDirServerItem.setOnAction(event -> getServerParent());
         deleteServerItem.setOnAction(event -> deleteRequest());
         newDirServerItem.setOnAction(event -> createDirRequest());
+        renameServerItem.setOnAction(event -> renameRequest());
     }
 
     public void selectDiskAction() {
@@ -157,6 +164,34 @@ public class MainController implements Initializable {
         }
     }
 
+    private void renameFile() {
+        String file;
+        if ((file = clientListView.getSelectionModel().getSelectedItem()) != null) {
+            Path path = Path.of(currentPath.toString(), file);
+            TextInputDialog editDialog = new TextInputDialog();
+            editDialog.setTitle("Rename file");
+            editDialog.setHeaderText(file + " will be renamed!");
+            editDialog.setContentText("New name:");
+            Optional<String> optName = editDialog.showAndWait();
+            if (optName.isPresent()) {
+                String newName = optName.get();
+                Path newPath = currentPath.resolve(newName);
+                if (!Files.exists(newPath)) {
+                    try {
+                        Files.move(path, path.resolveSibling(newName));
+                        updateClientListView(currentPath);
+                        showAlert(file + " renamed to " + newName, Alert.AlertType.INFORMATION);
+                    } catch (IOException e) {
+                        showAlert(file + " is not non-empty directory!", Alert.AlertType.ERROR);
+                        e.printStackTrace();
+                    }
+                } else {
+                    showAlert(newName + " is already exists!", Alert.AlertType.ERROR);
+                }
+            }
+        }
+    }
+
     public void getServerParent() {
         try {
             network.sendUpRequest();
@@ -196,6 +231,21 @@ public class MainController implements Initializable {
                 network.sendCreateDirRequest(name);
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+    }
+
+    private void renameRequest() {
+        String file;
+        if ((file = serverListView.getSelectionModel().getSelectedItem()) != null) {
+            TextInputDialog editDialog = new TextInputDialog();
+            editDialog.setTitle("Rename file");
+            editDialog.setHeaderText(file + " will be renamed!");
+            editDialog.setContentText("New name:");
+            Optional<String> optName = editDialog.showAndWait();
+            if (optName.isPresent()) {
+                String newName = optName.get();
+                network.sendRenameRequest(file, newName);
             }
         }
     }
@@ -266,7 +316,7 @@ public class MainController implements Initializable {
             byte[] buffer = new byte[BUFFER_SIZE];
             int readBytes;
             boolean start = true;
-            while ((readBytes = fis.read(buffer)) != -1){
+            while ((readBytes = fis.read(buffer)) != -1) {
                 network.sendFile(selectedFileName, selectedFileSize, buffer, start, readBytes);
                 start = false;
             }
@@ -323,13 +373,13 @@ public class MainController implements Initializable {
         if (isStart) {
             Files.deleteIfExists(path);
         }
-            FileOutputStream fos = new FileOutputStream(path.toString(), true);
-            fos.write(bytes,0, endPos);
-            if (Files.size(path) == fileSize) {
-                updateClientListView(currentPath);
-                showAlert(fileName + " downloaded.", Alert.AlertType.INFORMATION);
-            }
-            fos.close();
+        FileOutputStream fos = new FileOutputStream(path.toString(), true);
+        fos.write(bytes, 0, endPos);
+        if (Files.size(path) == fileSize) {
+            updateClientListView(currentPath);
+            showAlert(fileName + " downloaded.", Alert.AlertType.INFORMATION);
+        }
+        fos.close();
     }
 
     private void showAlert(String message, Alert.AlertType type) {

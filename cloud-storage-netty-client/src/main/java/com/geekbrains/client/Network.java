@@ -12,9 +12,7 @@ import io.netty.handler.codec.serialization.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -155,5 +153,9 @@ public class Network {
 
     public void close() {
         socketChannel.close();
+    }
+
+    public void sendRenameRequest(String file, String newName) {
+        sendCommand(Command.renameRequestCommand(file, newName));
     }
 }

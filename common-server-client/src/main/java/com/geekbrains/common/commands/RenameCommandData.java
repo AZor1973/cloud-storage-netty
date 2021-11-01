@@ -7,8 +7,9 @@ import java.io.Serial;
 import java.io.Serializable;
 @Getter
 @AllArgsConstructor
-public class CreateDirRequestCommandData implements Serializable {
+public class RenameCommandData implements Serializable {
+    private String file;
+    private String newName;
     @Serial
-    private static final long serialVersionUID = -7745466602287660770L;
-    private String name;
+    private static final long serialVersionUID = 2389971417625203231L;
 }
