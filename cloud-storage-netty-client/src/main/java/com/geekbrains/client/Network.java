@@ -14,6 +14,7 @@ import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 
 @Slf4j
@@ -121,6 +122,11 @@ public class Network {
 
     public void sendFile(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos) {
         sendCommand(Command.fileInfoCommand(fileName, fileSize, bytes, isStart, endPos));
+        try {
+            Thread.sleep(2);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     public void sendAuthMessage(String login, String password) {

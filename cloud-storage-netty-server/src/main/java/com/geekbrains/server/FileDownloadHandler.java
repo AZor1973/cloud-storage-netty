@@ -88,9 +88,6 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         }
         FileOutputStream fos = new FileOutputStream(path.toString(), true);
         fos.write(data.getBytes(),0, data.getEndPos());
-        System.out.println(data.getEndPos());
-        System.out.println(fileSize);
-        System.out.println(Files.size(path));
         log.debug("received: {}", fileName);
         log.debug("wrote: {}", fileName);
         if (Files.size(path) == fileSize) {
