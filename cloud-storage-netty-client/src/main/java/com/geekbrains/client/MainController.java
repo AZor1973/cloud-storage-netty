@@ -415,16 +415,26 @@ public class MainController implements Initializable {
     }
 
     public void connectLost() {
-        connectLabel.setText("SERVER: OFF");
+        connectLabel.setText("SERVER: OFF. Reconnect?");
         if (showAlert("Connection lost. Reconnect?", Alert.AlertType.CONFIRMATION)) {
-            network.getThread().interrupt();
-            network.connect();
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-            network.reAuth();
+            reconnect();
+        }
+    }
+
+    private void reconnect() {
+        network.getThread().interrupt();
+        network.connect();
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        network.reAuth();
+    }
+
+    public void labelReconnect(MouseEvent mouseEvent) {
+        if (mouseEvent.getClickCount() == 2) {
+            reconnect();
         }
     }
 }
