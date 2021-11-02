@@ -10,6 +10,9 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Timer;
+import java.util.TimerTask;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -22,6 +25,13 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         log.debug("Client connected");
+        Timer timer = new Timer(true);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+               ctx.writeAndFlush(Command.isConnectServer());
+            }
+        }, 0, TimeUnit.SECONDS.toMillis(5));
     }
 
     @Override
@@ -62,6 +72,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     private void authentication(ChannelHandlerContext ctx, Command msg) throws IOException {
+        System.out.println("AUTH");
         AuthCommandData data = (AuthCommandData) msg.getData();
         String login = data.getLogin();
         String password = data.getPassword();

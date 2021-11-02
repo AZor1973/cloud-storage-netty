@@ -13,8 +13,5 @@ public enum CommandType {
     DELETE_REQUEST,
     CREATE_DIR_REQUEST,
     RENAME_REQUEST,
-    END,
-    DOWNLOAD_FILE,
-    UPLOAD_FILE,
-    UPDATE_DATABASE;
+    CONNECT
 }

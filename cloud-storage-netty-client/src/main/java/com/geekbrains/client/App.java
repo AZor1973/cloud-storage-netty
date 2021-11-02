@@ -1,6 +1,7 @@
 package com.geekbrains.client;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -57,7 +58,7 @@ public class App extends Application {
         authStage.setScene(new Scene(authDialogPanel));
         authStage.setResizable(false);
         getAuthController().loginFocus();  // фокус на поле логина (для удобства)
-        authStage.setOnCloseRequest(we -> primaryStage.close());
+        authStage.setOnCloseRequest(we -> Network.getInstance().close());
     }
 
     private void initRegWindow() throws IOException {

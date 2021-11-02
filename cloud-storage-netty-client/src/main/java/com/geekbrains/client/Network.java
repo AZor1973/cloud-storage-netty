@@ -12,6 +12,7 @@ import io.netty.handler.codec.serialization.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.util.List;
 
@@ -23,7 +24,11 @@ public class Network {
     private static Network INSTANCE;
     private final String host;
     private final int port;
+    private String login;
+    private String password;
     private SocketChannel socketChannel;
+    private boolean isConnect;
+    private Thread thread;
 
     public static Network getInstance() {
         if (INSTANCE == null) {
@@ -42,7 +47,7 @@ public class Network {
     }
 
     public void connect() {
-        Thread thread = new Thread(() -> {
+        thread = new Thread(() -> {
             EventLoopGroup workerGroup = new NioEventLoopGroup();
             try {
                 Bootstrap bootstrap = new Bootstrap();
@@ -75,10 +80,13 @@ public class Network {
         });
         thread.setDaemon(true);
         thread.start();
+        isConnect = true;
     }
 
     public void readMessage(Command command) {
-        if (command.getType() == CommandType.INFO) {
+        if (command.getType() == CommandType.CONNECT) {
+            isConnect = true;
+        } else if (command.getType() == CommandType.INFO) {
             InfoCommandData data = (InfoCommandData) command.getData();
             Platform.runLater(() -> showAlert(data.getMessage(), Alert.AlertType.INFORMATION));
         } else if (command.getType() == CommandType.ERROR) {
@@ -128,7 +136,15 @@ public class Network {
     }
 
     public void sendAuthMessage(String login, String password) {
+        this.login = login;
+        this.password = password;
         sendCommand(Command.authCommand(login, password));
+    }
+
+    public void reAuth() {
+        if (login != null && password != null) {
+            sendAuthMessage(login, password);
+        }
     }
 
     public void sendRegMessage(String username, String login, String password) {
@@ -157,5 +173,21 @@ public class Network {
 
     public void sendRenameRequest(String file, String newName) {
         sendCommand(Command.renameRequestCommand(file, newName));
+    }
+
+    public boolean isConnect() {
+        return isConnect;
+    }
+
+    public void setConnect(boolean connect) {
+        isConnect = connect;
+    }
+
+    public boolean isSocketChannelOpen() {
+        return socketChannel.isOpen();
+    }
+
+    public Thread getThread() {
+        return thread;
     }
 }

@@ -1,5 +1,6 @@
 package com.geekbrains.client;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -14,10 +15,8 @@ import java.net.URL;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -39,6 +38,8 @@ public class MainController implements Initializable {
     @FXML
     public Label currentPathLabelServer;
     @FXML
+    public Label connectLabel;
+    @FXML
     public ComboBox<String> disksBox;
     private static final int BUFFER_SIZE = 8192;
     private Network network;
@@ -51,6 +52,9 @@ public class MainController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         network = Network.getInstance();
         network.connect();
+        if (network.isConnect()) {
+            connectLabel.setText("SERVER: ON");
+        }
         disksBox.getItems().clear();
         for (Path p : FileSystems.getDefault().getRootDirectories()) {
             disksBox.getItems().add(p.toString());
@@ -86,6 +90,30 @@ public class MainController implements Initializable {
         deleteServerItem.setOnAction(event -> deleteRequest());
         newDirServerItem.setOnAction(event -> createDirRequest());
         renameServerItem.setOnAction(event -> renameRequest());
+        Timer timer = new Timer(true);
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                if (network.isConnect()) {
+                    Platform.runLater(() -> connectLabel.setText("SERVER: ON"));
+                    network.setConnect(false);
+                } else {
+                    Platform.runLater(() -> {
+                        connectLabel.setText("SERVER: OFF");
+                        if (showAlert("Connection lost. Reconnect?", Alert.AlertType.CONFIRMATION)) {
+                            network.getThread().interrupt();
+                            network.connect();
+                            try {
+                                Thread.sleep(1000);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
+                            network.reAuth();
+                        }
+                    });
+                }
+            }
+        }, 0, TimeUnit.SECONDS.toMillis(12));
     }
 
     public void selectDiskAction() {
@@ -382,10 +410,11 @@ public class MainController implements Initializable {
         fos.close();
     }
 
-    private void showAlert(String message, Alert.AlertType type) {
+    private boolean showAlert(String message, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setContentText(message);
         alert.showAndWait();
+        return alert.getResult() == ButtonType.OK;
     }
 
     public void keyHandleInput(KeyEvent keyEvent) {
