@@ -61,6 +61,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             ctx.writeAndFlush(Command.errorCommand("This user is already signed in!"));
         } else {
             this.username = username;
+            log.debug(username + " registered");
             Server.addClient(username);
             pathDir = Server.getRoot().resolve(username);
             if (!Files.exists(pathDir)) {
@@ -72,7 +73,6 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     private void authentication(ChannelHandlerContext ctx, Command msg) throws IOException {
-        System.out.println("AUTH");
         AuthCommandData data = (AuthCommandData) msg.getData();
         String login = data.getLogin();
         String password = data.getPassword();
@@ -100,11 +100,10 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         }
         FileOutputStream fos = new FileOutputStream(path.toString(), true);
         fos.write(data.getBytes(), 0, data.getEndPos());
-        log.debug("received: {}", fileName);
-        log.debug("wrote: {}", fileName);
         if (Files.size(path) == fileSize) {
             ctx.writeAndFlush(Command.infoCommand(fileName + " uploaded."));
             updateFileList(ctx, pathDir);
+            log.debug("wrote: {}", fileName);
         }
         fos.close();
     }
@@ -181,6 +180,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             try {
                 Files.move(path, path.resolveSibling(newName));
                 ctx.writeAndFlush(Command.infoCommand(file + " renamed to " + newName));
+                log.debug(file + " renamed to " + newName);
                 updateFileList(ctx, pathDir);
             } catch (IOException e) {
                 ctx.writeAndFlush(Command.infoCommand(file + " is not non-empty directory!"));

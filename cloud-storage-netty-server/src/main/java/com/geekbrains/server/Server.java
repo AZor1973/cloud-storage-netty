@@ -21,7 +21,7 @@ public class Server {
     private static final List<String> clients = new ArrayList<>();
     private static final Path root = Path.of("root");
     private static final int SERVER_PORT = 8189;
-
+    private final DatabaseService ds = new DatabaseService();
 
     public Server() {
         EventLoopGroup auth = new NioEventLoopGroup(1);
@@ -49,6 +49,7 @@ public class Server {
         } catch (Exception e) {
             log.error("error: ", e);
         } finally {
+            ds.closeConnection();
             auth.shutdownGracefully();
             worker.shutdownGracefully();
         }
@@ -56,15 +57,18 @@ public class Server {
 
     public static void addClient(String user){
         clients.add(user);
+        log.debug(user + " added");
     }
 
     public static void removeClient(String user){
         clients.removeIf(client -> client.equals(user));
+        log.debug(user + " removed");
     }
 
     public static boolean isUsernameBusy(String username) {
         for (String client : clients) {
             if (client.equals(username)) {
+                log.debug(username + " is present");
                 return true;
             }
         }

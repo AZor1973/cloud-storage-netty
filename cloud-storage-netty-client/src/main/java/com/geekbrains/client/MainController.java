@@ -150,6 +150,7 @@ public class MainController implements Initializable {
             e.printStackTrace();
         }
         updateClientListView(currentPath);
+        log.debug(fileName + " deleted.");
         showAlert(fileName + " deleted.", Alert.AlertType.INFORMATION);
     }
 
@@ -188,6 +189,7 @@ public class MainController implements Initializable {
                 }
             }
             updateClientListView(currentPath);
+            log.debug(name + " created");
             showAlert(name + " created", Alert.AlertType.INFORMATION);
         }
     }
@@ -208,6 +210,7 @@ public class MainController implements Initializable {
                     try {
                         Files.move(path, path.resolveSibling(newName));
                         updateClientListView(currentPath);
+                        log.debug(file + " renamed to " + newName);
                         showAlert(file + " renamed to " + newName, Alert.AlertType.INFORMATION);
                     } catch (IOException e) {
                         showAlert(file + " is not non-empty directory!", Alert.AlertType.ERROR);
@@ -349,6 +352,7 @@ public class MainController implements Initializable {
                 start = false;
             }
             input.clear();
+            log.debug(selectedFileName + " uploaded");
             fis.close();
             selectedFilePath = null;
             selectedFileName = null;
@@ -405,6 +409,7 @@ public class MainController implements Initializable {
         fos.write(bytes, 0, endPos);
         if (Files.size(path) == fileSize) {
             updateClientListView(currentPath);
+            log.debug(fileName + " downloaded.");
             showAlert(fileName + " downloaded.", Alert.AlertType.INFORMATION);
         }
         fos.close();

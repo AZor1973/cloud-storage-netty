@@ -72,6 +72,7 @@ public class Network {
                 ChannelFuture future = bootstrap.connect(host, port).sync();
                 future.channel().closeFuture().sync();
             } catch (Exception e) {
+                log.debug("Network error");
                 e.printStackTrace();
                 showAlert("Network error", Alert.AlertType.ERROR);
             } finally {
@@ -85,30 +86,28 @@ public class Network {
 
     public void readMessage(Command command) {
         if (command.getType() == CommandType.CONNECT) {
+            log.debug("connect");
             isConnect = true;
         } else if (command.getType() == CommandType.INFO) {
             InfoCommandData data = (InfoCommandData) command.getData();
+            log.debug(data.getMessage());
             Platform.runLater(() -> showAlert(data.getMessage(), Alert.AlertType.INFORMATION));
         } else if (command.getType() == CommandType.ERROR) {
             ErrorCommandData data = (ErrorCommandData) command.getData();
-            String error = data.getErrorMessage();
-            Platform.runLater(() -> showAlert(error, Alert.AlertType.ERROR));
+            log.debug(data.getErrorMessage());
+            Platform.runLater(() -> showAlert(data.getErrorMessage(), Alert.AlertType.ERROR));
         } else if (command.getType() == CommandType.AUTH_OK) {
             AuthOkCommandData data = (AuthOkCommandData) command.getData();
-            String message = data.getUsername();
-            Platform.runLater(() -> App.INSTANCE.switchToMainWindow(message));
-
+           log.debug("Auth OK: " + data.getUsername());
+            Platform.runLater(() -> App.INSTANCE.switchToMainWindow(data.getUsername()));
         } else if (command.getType() == CommandType.UPDATE_FILE_LIST) {
             UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
-            List<String> files = data.getFiles();
-            Platform.runLater(() -> App.INSTANCE.getMainController().updateServerListView(files));
+            Platform.runLater(() -> App.INSTANCE.getMainController().updateServerListView(data.getFiles()));
         } else if (command.getType() == CommandType.FILE_INFO) {
             FileInfoCommandData data = (FileInfoCommandData) command.getData();
-            String fileName = data.getFileName();
-            long fileSize = data.getFileSize();
             Platform.runLater(() -> {
                 try {
-                    App.INSTANCE.getMainController().download(fileName, fileSize, data.getBytes(), data.isStart(), data.getEndPos());
+                    App.INSTANCE.getMainController().download(data.getFileName(), data.getFileSize(), data.getBytes(), data.isStart(), data.getEndPos());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -124,6 +123,7 @@ public class Network {
 
     private void sendCommand(Command command) {
         socketChannel.writeAndFlush(command);
+        log.debug("command send");
     }
 
     public void sendFile(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos) {
@@ -181,10 +181,6 @@ public class Network {
 
     public void setConnect(boolean connect) {
         isConnect = connect;
-    }
-
-    public boolean isSocketChannelOpen() {
-        return socketChannel.isOpen();
     }
 
     public Thread getThread() {

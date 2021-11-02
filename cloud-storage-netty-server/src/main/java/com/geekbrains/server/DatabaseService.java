@@ -18,6 +18,7 @@ public class DatabaseService {
     public DatabaseService() {
         try {
             connection = DriverManager.getConnection(DB_URL);
+            log.debug("database connected");
             getUsernameStatement = connection.prepareStatement(GET_USERNAME_REQUEST);
             changeUsernameStatement = connection.prepareStatement(CHANGE_USERNAME_REQUEST);
             addNewUserStatement = connection.prepareStatement(ADD_NEW_USER_REQUEST);
