@@ -12,9 +12,7 @@ import io.netty.handler.codec.serialization.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
-import java.util.List;
 
 @Slf4j
 public class Network {
@@ -27,7 +25,6 @@ public class Network {
     private String login;
     private String password;
     private SocketChannel socketChannel;
-    private boolean isConnect;
     private Thread thread;
 
     public static Network getInstance() {
@@ -65,12 +62,18 @@ public class Network {
                                             protected void channelRead0(ChannelHandlerContext ctx, Command msg) {
                                                 readMessage(msg);
                                             }
+
+                                            @Override
+                                            public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+                                                Platform.runLater(() -> App.INSTANCE.getMainController().connectLost());
+                                            }
                                         }
                                 );
                             }
                         });
                 ChannelFuture future = bootstrap.connect(host, port).sync();
                 future.channel().closeFuture().sync();
+                log.debug("connect");
             } catch (Exception e) {
                 log.debug("Network error");
                 e.printStackTrace();
@@ -81,14 +84,11 @@ public class Network {
         });
         thread.setDaemon(true);
         thread.start();
-        isConnect = true;
+        Platform.runLater(() -> App.INSTANCE.getMainController().connectLabel.setText("SERVER: ON"));
     }
 
     public void readMessage(Command command) {
-        if (command.getType() == CommandType.CONNECT) {
-            log.debug("connect");
-            isConnect = true;
-        } else if (command.getType() == CommandType.INFO) {
+        if (command.getType() == CommandType.INFO) {
             InfoCommandData data = (InfoCommandData) command.getData();
             log.debug(data.getMessage());
             Platform.runLater(() -> showAlert(data.getMessage(), Alert.AlertType.INFORMATION));
@@ -173,14 +173,6 @@ public class Network {
 
     public void sendRenameRequest(String file, String newName) {
         sendCommand(Command.renameRequestCommand(file, newName));
-    }
-
-    public boolean isConnect() {
-        return isConnect;
-    }
-
-    public void setConnect(boolean connect) {
-        isConnect = connect;
     }
 
     public Thread getThread() {

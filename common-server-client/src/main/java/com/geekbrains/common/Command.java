@@ -95,10 +95,4 @@ public class Command implements Serializable {
         command.data = new RenameCommandData(file, newName);
         return command;
     }
-
-    public static Command isConnectServer(){
-        Command command = new Command();
-        command.type = CommandType.CONNECT;
-        return command;
-    }
 }

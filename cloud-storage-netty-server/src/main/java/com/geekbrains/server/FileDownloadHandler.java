@@ -25,13 +25,6 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
         log.debug("Client connected");
-        Timer timer = new Timer(true);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-               ctx.writeAndFlush(Command.isConnectServer());
-            }
-        }, 0, TimeUnit.SECONDS.toMillis(5));
     }
 
     @Override

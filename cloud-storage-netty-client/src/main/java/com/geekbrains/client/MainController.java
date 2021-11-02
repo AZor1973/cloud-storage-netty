@@ -1,6 +1,5 @@
 package com.geekbrains.client;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -16,7 +15,6 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -52,9 +50,6 @@ public class MainController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         network = Network.getInstance();
         network.connect();
-        if (network.isConnect()) {
-            connectLabel.setText("SERVER: ON");
-        }
         disksBox.getItems().clear();
         for (Path p : FileSystems.getDefault().getRootDirectories()) {
             disksBox.getItems().add(p.toString());
@@ -90,30 +85,6 @@ public class MainController implements Initializable {
         deleteServerItem.setOnAction(event -> deleteRequest());
         newDirServerItem.setOnAction(event -> createDirRequest());
         renameServerItem.setOnAction(event -> renameRequest());
-        Timer timer = new Timer(true);
-        timer.schedule(new TimerTask() {
-            @Override
-            public void run() {
-                if (network.isConnect()) {
-                    Platform.runLater(() -> connectLabel.setText("SERVER: ON"));
-                    network.setConnect(false);
-                } else {
-                    Platform.runLater(() -> {
-                        connectLabel.setText("SERVER: OFF");
-                        if (showAlert("Connection lost. Reconnect?", Alert.AlertType.CONFIRMATION)) {
-                            network.getThread().interrupt();
-                            network.connect();
-                            try {
-                                Thread.sleep(1000);
-                            } catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                            network.reAuth();
-                        }
-                    });
-                }
-            }
-        }, 0, TimeUnit.SECONDS.toMillis(12));
     }
 
     public void selectDiskAction() {
@@ -440,6 +411,20 @@ public class MainController implements Initializable {
             fileNameToDownload = null;
         } else if (keyEvent.getCode() == KeyCode.RIGHT) {
             input.requestFocus();
+        }
+    }
+
+    public void connectLost() {
+        connectLabel.setText("SERVER: OFF");
+        if (showAlert("Connection lost. Reconnect?", Alert.AlertType.CONFIRMATION)) {
+            network.getThread().interrupt();
+            network.connect();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            network.reAuth();
         }
     }
 }
