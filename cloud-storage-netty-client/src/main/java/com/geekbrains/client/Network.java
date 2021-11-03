@@ -123,7 +123,6 @@ public class Network {
 
     private void sendCommand(Command command) {
         socketChannel.writeAndFlush(command);
-        log.debug("command send");
     }
 
     public void sendFile(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos) {
