@@ -12,6 +12,7 @@ import io.netty.handler.codec.serialization.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 
 @Slf4j
@@ -98,7 +99,7 @@ public class Network {
             Platform.runLater(() -> showAlert(data.getErrorMessage(), Alert.AlertType.ERROR));
         } else if (command.getType() == CommandType.AUTH_OK) {
             AuthOkCommandData data = (AuthOkCommandData) command.getData();
-           log.debug("Auth OK: " + data.getUsername());
+            log.debug("Auth OK: " + data.getUsername());
             Platform.runLater(() -> App.INSTANCE.switchToMainWindow(data.getUsername()));
         } else if (command.getType() == CommandType.UPDATE_FILE_LIST) {
             UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
@@ -140,12 +141,6 @@ public class Network {
         sendCommand(Command.authCommand(login, password));
     }
 
-    public void reAuth() {
-        if (login != null && password != null) {
-            sendAuthMessage(login, password);
-        }
-    }
-
     public void sendRegMessage(String username, String login, String password) {
         sendCommand(Command.regCommand(username, login, password));
     }
@@ -166,12 +161,22 @@ public class Network {
         sendCommand(Command.createDirRequestCommand(name));
     }
 
-    public void close() {
-        socketChannel.close();
-    }
-
     public void sendRenameRequest(String file, String newName) {
         sendCommand(Command.renameRequestCommand(file, newName));
+    }
+
+    public void sendChangeUsername(String newName) {
+        sendCommand(Command.changeUsernameCommand(newName));
+    }
+
+    public void reAuth() {
+        if (login != null && password != null) {
+            sendAuthMessage(login, password);
+        }
+    }
+
+    public void close() {
+        socketChannel.close();
     }
 
     public Thread getThread() {

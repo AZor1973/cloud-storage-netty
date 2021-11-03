@@ -95,4 +95,11 @@ public class Command implements Serializable {
         command.data = new RenameCommandData(file, newName);
         return command;
     }
+
+    public static Command changeUsernameCommand(String newName) {
+        Command command = new Command();
+        command.type = CommandType.CHANGE_USERNAME;
+        command.data = new ChangeUsernameCommandData(newName);
+        return command;
+    }
 }

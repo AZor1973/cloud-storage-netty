@@ -42,27 +42,27 @@ public class DatabaseService {
         return username;
     }
 
-    public void changeUsername(String newUsername, String oldUsername) {
+    public boolean changeUsername(String newUsername, String oldUsername) {
         try {
             changeUsernameStatement.setString(1, newUsername);
             changeUsernameStatement.setString(2, oldUsername);
-            changeUsernameStatement.executeUpdate();
+           return changeUsernameStatement.executeUpdate() > 0;
         } catch (SQLException e) {
             log.error("Failed to database connection");
         }
+        return false;
     }
 
-    public int addNewUser(String username, String login, String password) {
-        int result = 0;
+    public boolean addNewUser(String username, String login, String password) {
         try {
             addNewUserStatement.setString(1, login);
             addNewUserStatement.setString(2, password);
             addNewUserStatement.setString(3, username);
-            result = addNewUserStatement.executeUpdate();
+            return addNewUserStatement.executeUpdate() > 0;
         } catch (SQLException e) {
             log.error("Failed to database connection");
         }
-        return result;
+        return false;
     }
 
     public void closeConnection() {

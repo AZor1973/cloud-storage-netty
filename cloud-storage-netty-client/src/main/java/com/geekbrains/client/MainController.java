@@ -11,9 +11,8 @@ import org.apache.commons.io.FileUtils;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.file.FileSystems;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -168,6 +167,9 @@ public class MainController implements Initializable {
     private void renameFile() {
         String file;
         if ((file = clientListView.getSelectionModel().getSelectedItem()) != null) {
+            if (file.endsWith("[DIR]")) {
+                file = file.substring(0, file.length() - 6);
+            }
             Path path = Path.of(currentPath.toString(), file);
             TextInputDialog editDialog = new TextInputDialog();
             editDialog.setTitle("Rename file");
@@ -179,14 +181,37 @@ public class MainController implements Initializable {
                 Path newPath = currentPath.resolve(newName);
                 if (!Files.exists(newPath)) {
                     try {
-                        Files.move(path, path.resolveSibling(newName));
-                        updateClientListView(currentPath);
-                        log.debug(file + " renamed to " + newName);
-                        showAlert(file + " renamed to " + newName, Alert.AlertType.INFORMATION);
+                        if (Files.isDirectory(path)) {
+                            Files.createDirectory(newPath);
+                            Files.walkFileTree(path, new SimpleFileVisitor<>() {
+
+                                @Override
+                                public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                                    Path targetDir = newPath.resolve(path.relativize(dir));
+                                    try {
+                                        Files.createDirectory(targetDir);
+                                    } catch (FileAlreadyExistsException e) {
+                                        if (!Files.isDirectory(targetDir)) throw e;
+                                    }
+                                    return FileVisitResult.CONTINUE;
+                                }
+
+                                @Override
+                                public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                                    Files.move(file, newPath.resolve(path.relativize(file)));
+                                    return FileVisitResult.CONTINUE;
+                                }
+                            });
+                            FileUtils.forceDelete(new File(String.valueOf(path)));
+                        } else {
+                            Files.move(path, path.resolveSibling(newName));
+                        }
                     } catch (IOException e) {
-                        showAlert(file + " is not non-empty directory!", Alert.AlertType.ERROR);
                         e.printStackTrace();
                     }
+                    updateClientListView(currentPath);
+                    log.debug(file + " renamed to " + newName);
+                    showAlert(file + " renamed to " + newName, Alert.AlertType.INFORMATION);
                 } else {
                     showAlert(newName + " is already exists!", Alert.AlertType.ERROR);
                 }
@@ -240,6 +265,9 @@ public class MainController implements Initializable {
     private void renameRequest() {
         String file;
         if ((file = serverListView.getSelectionModel().getSelectedItem()) != null) {
+            if (file.endsWith("[DIR]")) {
+                file = file.substring(0, file.length() - 6);
+            }
             TextInputDialog editDialog = new TextInputDialog();
             editDialog.setTitle("Rename file");
             editDialog.setHeaderText(file + " will be renamed!");
@@ -435,6 +463,18 @@ public class MainController implements Initializable {
     public void labelReconnect(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() == 2) {
             reconnect();
+        }
+    }
+
+    public void changeUsername() {
+        TextInputDialog editDialog = new TextInputDialog("Enter new name");
+        editDialog.setTitle("Change nick");
+        editDialog.setHeaderText("Enter new name");
+        editDialog.setContentText("New name:");
+        Optional<String> optName = editDialog.showAndWait();
+        if (optName.isPresent()) {
+            String name = optName.get();
+            network.sendChangeUsername(name);
         }
     }
 }

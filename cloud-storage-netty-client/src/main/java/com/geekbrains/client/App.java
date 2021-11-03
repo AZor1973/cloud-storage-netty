@@ -85,7 +85,6 @@ public class App extends Application {
         return regLoader.getController();
     }
 
-
     public void switchToMainWindow(String username) {
         primaryStage.show();
         primaryStage.setTitle(username);

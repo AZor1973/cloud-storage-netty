@@ -12,5 +12,6 @@ public enum CommandType {
     UP_REQUEST,
     DELETE_REQUEST,
     CREATE_DIR_REQUEST,
-    RENAME_REQUEST
+    RENAME_REQUEST,
+    CHANGE_USERNAME
 }

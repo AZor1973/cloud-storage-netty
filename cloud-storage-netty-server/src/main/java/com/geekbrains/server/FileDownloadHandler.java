@@ -6,13 +6,11 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Path;
+import java.nio.file.*;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -38,6 +36,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             case DELETE_REQUEST -> deleteFile(ctx, msg);
             case CREATE_DIR_REQUEST -> createDirectory(ctx, msg);
             case RENAME_REQUEST -> renameFile(ctx, msg);
+            case CHANGE_USERNAME -> changeUsername(ctx, msg);
         }
     }
 
@@ -46,9 +45,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         String login = data.getLogin();
         String password = data.getPassword();
         String username = data.getUsername();
-        int result = ds.addNewUser(username, login, password);
-        System.out.println(result);
-        if (result == 0) {
+        if (!ds.addNewUser(username, login, password)) {
             ctx.writeAndFlush(Command.errorCommand("This user is already registered!"));
         } else if (Server.isUsernameBusy(username)) {
             ctx.writeAndFlush(Command.errorCommand("This user is already signed in!"));
@@ -163,24 +160,67 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         ctx.writeAndFlush(Command.infoCommand(dirName + " created"));
     }
 
-    private void renameFile(ChannelHandlerContext ctx, Command msg) {
+    private void renameFile(ChannelHandlerContext ctx, Command msg) throws IOException {
         RenameCommandData data = (RenameCommandData) msg.getData();
         String file = data.getFile();
         String newName = data.getNewName();
         Path path = pathDir.resolve(file);
         Path newPath = pathDir.resolve(newName);
         if (!Files.exists(newPath)) {
-            try {
+            if (Files.isDirectory(path)) {
+                renameDir(path, newPath);
+            } else {
                 Files.move(path, path.resolveSibling(newName));
-                ctx.writeAndFlush(Command.infoCommand(file + " renamed to " + newName));
-                log.debug(file + " renamed to " + newName);
-                updateFileList(ctx, pathDir);
-            } catch (IOException e) {
-                ctx.writeAndFlush(Command.infoCommand(file + " is not non-empty directory!"));
-                e.printStackTrace();
             }
+            ctx.writeAndFlush(Command.infoCommand(file + " renamed to " + newName));
+            log.debug(file + " renamed to " + newName);
+            updateFileList(ctx, pathDir);
         } else {
             ctx.writeAndFlush(Command.errorCommand(newName + " is already exists!"));
+        }
+    }
+
+    private void renameDir(Path path, Path newPath) throws IOException {
+        Files.createDirectory(newPath);
+        Files.walkFileTree(path, new SimpleFileVisitor<>() {
+
+            @Override
+            public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+                Path targetDir = newPath.resolve(path.relativize(dir));
+                try {
+                    Files.createDirectory(targetDir);
+                } catch (FileAlreadyExistsException e) {
+                    if (!Files.isDirectory(targetDir)) throw e;
+                }
+                return FileVisitResult.CONTINUE;
+            }
+
+            @Override
+            public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+                Files.move(file, newPath.resolve(path.relativize(file)));
+                return FileVisitResult.CONTINUE;
+            }
+        });
+        FileUtils.forceDelete(new File(String.valueOf(path)));
+    }
+
+    private void changeUsername(ChannelHandlerContext ctx, Command msg) throws IOException {
+        ChangeUsernameCommandData data = (ChangeUsernameCommandData) msg.getData();
+        String newName = data.getNewName();
+        if (Server.isUsernameBusy(newName)) {
+            ctx.writeAndFlush(Command.errorCommand("This user is already signed in!"));
+        } else if (ds.changeUsername(newName, username)) {
+            Path newPath = Server.getRoot().resolve(newName);
+            renameDir(pathDir, newPath);
+            pathDir = newPath;
+            Server.removeClient(username);
+            Server.addClient(newName);
+            log.debug(username + " changed nick to " + newName);
+            username = newName;
+            ctx.writeAndFlush(Command.authOkCommand(username));
+            updateFileList(ctx, pathDir);
+        } else {
+            ctx.writeAndFlush(Command.errorCommand("This user is already registered!"));
         }
     }
 
@@ -189,7 +229,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         fileList = Files.list(path)
                 .map(this::toStringWithDir)
                 .collect(Collectors.toList());
-        fileList.add(0, pathDir.toString());
+        fileList.add(0, pathDir.toString().substring(5));
         ctx.writeAndFlush(Command.updateFileListCommand(fileList));
     }
 
