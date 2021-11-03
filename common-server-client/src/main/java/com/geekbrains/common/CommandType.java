@@ -5,8 +5,12 @@ public enum CommandType {
     AUTH_OK,
     ERROR,
     FILE_INFO,
-    END,
-    DOWNLOAD_FILE,
-    UPLOAD_FILE,
-    UPDATE_DATABASE
+    INFO,
+    REG,
+    UPDATE_FILE_LIST,
+    FILE_REQUEST,
+    UP_REQUEST,
+    DELETE_REQUEST,
+    CREATE_DIR_REQUEST,
+    RENAME_REQUEST
 }

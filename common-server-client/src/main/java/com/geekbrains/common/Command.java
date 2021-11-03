@@ -1,25 +1,23 @@
 package com.geekbrains.common;
 
-import com.geekbrains.common.commands.AuthCommandData;
-import com.geekbrains.common.commands.AuthOkCommandData;
-import com.geekbrains.common.commands.ErrorCommandData;
-import com.geekbrains.common.commands.FileInfoCommandData;
+import com.geekbrains.common.commands.*;
+import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
-
+import java.util.List;
+@Getter
 public class Command implements Serializable {
     @Serial
     private static final long serialVersionUID = 4527858572263852177L;
     private Object data;
     private CommandType type;
 
-    public Object getData() {
-        return data;
-    }
-
-    public CommandType getType() {
-        return type;
+    public static Command regCommand(String username, String login, String password) {
+        Command command = new Command();
+        command.data = new RegCommandData(username, login, password);
+        command.type = CommandType.REG;
+        return command;
     }
 
     public static Command authCommand(String login, String password) {
@@ -36,6 +34,13 @@ public class Command implements Serializable {
         return command;
     }
 
+    public static Command fileRequestCommand(String fileName){
+        Command command = new Command();
+        command.data = new FileRequestCommandData(fileName);
+        command.type = CommandType.FILE_REQUEST;
+        return command;
+    }
+
     public static Command errorCommand(String errorMessage) {
         Command command = new Command();
         command.type = CommandType.ERROR;
@@ -43,10 +48,51 @@ public class Command implements Serializable {
         return command;
     }
 
-    public static Command fileInfoCommand(String fileName, long fileSize, byte[] bytes){
+    public static Command fileInfoCommand(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos){
         Command command = new Command();
         command.type = CommandType.FILE_INFO;
-        command.data = new FileInfoCommandData(fileName, fileSize, bytes);
+        command.data = new FileInfoCommandData(fileName, fileSize, bytes, isStart, endPos);
+        return command;
+    }
+
+    public static Command infoCommand(String message){
+        Command command = new Command();
+        command.type = CommandType.INFO;
+        command.data = new InfoCommandData(message);
+        return command;
+    }
+
+    public static Command updateFileListCommand(List<String> files){
+        Command command = new Command();
+        command.type = CommandType.UPDATE_FILE_LIST;
+        command.data = new UpdateFileListCommandData(files);
+        return command;
+    }
+
+    public static Command upRequestCommand() {
+        Command command = new Command();
+        command.type = CommandType.UP_REQUEST;
+        return command;
+    }
+
+    public static Command deleteRequestCommand(String fileName) {
+        Command command = new Command();
+        command.type = CommandType.DELETE_REQUEST;
+        command.data = new DeleteCommandData(fileName);
+        return command;
+    }
+
+    public static Command createDirRequestCommand(String name) {
+        Command command = new Command();
+        command.type = CommandType.CREATE_DIR_REQUEST;
+        command.data = new CreateDirCommandData(name);
+        return command;
+    }
+
+    public static Command renameRequestCommand(String file, String newName) {
+        Command command = new Command();
+        command.type = CommandType.RENAME_REQUEST;
+        command.data = new RenameCommandData(file, newName);
         return command;
     }
 }

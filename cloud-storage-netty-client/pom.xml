@@ -58,6 +58,12 @@
             <version>1</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.10.0</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
     <build>
@@ -97,7 +103,7 @@
                     </descriptorRefs>
                     <archive>
                         <manifest>
-                            <mainClass>com.geekbrains.client.App</mainClass>
+                            <mainClass>com.geekbrains.client.Launcher</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
@@ -117,7 +123,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>com.geekbrains.client.App</mainClass>
+                            <mainClass>com.geekbrains.client.Launcher</mainClass>
                         </manifest>
                     </archive>
                 </configuration>

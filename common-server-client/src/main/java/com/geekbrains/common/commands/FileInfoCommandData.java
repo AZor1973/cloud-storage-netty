@@ -14,4 +14,6 @@ public class FileInfoCommandData implements Serializable {
     private String fileName;
     private long fileSize;
     private byte[] bytes;
+    private boolean isStart;
+    private int endPos;
 }

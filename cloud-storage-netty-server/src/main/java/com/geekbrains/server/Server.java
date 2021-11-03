@@ -13,9 +13,15 @@ import io.netty.handler.codec.serialization.ObjectEncoder;
 import lombok.extern.slf4j.Slf4j;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 
 @Slf4j
 public class Server {
+    private static final List<String> clients = new ArrayList<>();
+    private static final Path root = Path.of("root");
+    private static final int SERVER_PORT = 8189;
+    private final DatabaseService ds = new DatabaseService();
 
     public Server() {
         EventLoopGroup auth = new NioEventLoopGroup(1);
@@ -28,15 +34,14 @@ public class Server {
                         @Override
                         protected void initChannel(SocketChannel channel) {
                             channel.pipeline().addLast(
+                                    new ObjectDecoder(ClassResolvers.cacheDisabled(null)),
                                     new ObjectEncoder(),
-                                    new ObjectDecoder(2000000000, ClassResolvers.cacheDisabled(null))
-//                                    new FileInfoMessageHandler()
+                                    new FileDownloadHandler()
                             );
                         }
                     });
-            ChannelFuture future = bootstrap.bind(8189).sync();
+            ChannelFuture future = bootstrap.bind(SERVER_PORT).sync();
             log.debug("Server started...");
-            Path root = Path.of("root");
             if (!Files.exists(root)) {
                 Files.createDirectory(root);
             }
@@ -44,13 +49,38 @@ public class Server {
         } catch (Exception e) {
             log.error("error: ", e);
         } finally {
+            ds.closeConnection();
             auth.shutdownGracefully();
             worker.shutdownGracefully();
         }
     }
 
+    public static void addClient(String user){
+        clients.add(user);
+        log.debug(user + " added");
+    }
+
+    public static void removeClient(String user){
+        clients.removeIf(client -> client.equals(user));
+        log.debug(user + " removed");
+    }
+
+    public static boolean isUsernameBusy(String username) {
+        for (String client : clients) {
+            if (client.equals(username)) {
+                log.debug(username + " is present");
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public static Path getRoot(){
+        return root;
+    }
+
     public static void main(String[] args) {
-        new Server()
+        new Server();
     }
 }
 
