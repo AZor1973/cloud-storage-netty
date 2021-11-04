@@ -40,8 +40,6 @@ public class MainController implements Initializable {
     public ComboBox<String> disksBox;
     private static final int BUFFER_SIZE = 8192;
     private Network network;
-    private String selectedFileName;
-    private Path selectedFilePath;
     private Path currentPath;
 
     @Override
@@ -341,9 +339,7 @@ public class MainController implements Initializable {
             currentPath = path;
             updateClientListView(currentPath);
         } else {
-            selectedFileName = fileName;
-            selectedFilePath = path;
-            input.setText(selectedFileName);
+            input.setText(fileName);
             input.requestFocus();
         }
     }
@@ -351,19 +347,18 @@ public class MainController implements Initializable {
     // Передача файла на сервер
     public void upload() throws IOException {
         if (!input.getText().isBlank()) {
-            long selectedFileSize = Files.size(selectedFilePath);
-            FileInputStream fis = new FileInputStream(selectedFilePath.toString());
+            Path path = currentPath.resolve(input.getText());
+            long selectedFileSize = Files.size(path);
+            FileInputStream fis = new FileInputStream(path.toString());
             byte[] buffer = new byte[BUFFER_SIZE];
             int readBytes;
             boolean start = true;
             while ((readBytes = fis.read(buffer)) != -1) {
-                network.sendFile(selectedFileName, selectedFileSize, buffer, start, readBytes);
+                network.sendFile(input.getText(), selectedFileSize, buffer, start, readBytes);
                 start = false;
             }
             input.clear();
             fis.close();
-            selectedFilePath = null;
-            selectedFileName = null;
             clientListView.requestFocus();
         }
     }
@@ -436,8 +431,6 @@ public class MainController implements Initializable {
     public void keyHandleInput(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
             input.clear();
-            selectedFileName = null;
-            selectedFilePath = null;
             clientListView.requestFocus();
         } else if (keyEvent.getCode() == KeyCode.LEFT) {
             output.requestFocus();
