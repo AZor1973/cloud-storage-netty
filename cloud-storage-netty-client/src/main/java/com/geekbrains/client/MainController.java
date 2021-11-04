@@ -94,8 +94,8 @@ public class MainController implements Initializable {
     private void moveToParent() {
         Path parentPath = currentPath.getParent();
         if (parentPath != null) {
-            updateClientListView(parentPath);
             currentPath = parentPath;
+            updateClientListView(currentPath);
         }
     }
 
