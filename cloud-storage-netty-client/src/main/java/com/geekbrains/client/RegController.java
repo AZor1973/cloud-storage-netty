@@ -20,7 +20,7 @@ public class RegController {
     @FXML
     public TextField nickField;
 
-    public void submitRegistration() throws IOException {
+    public void submitRegistration() {
         String login = loginFieldReg.getText();
         String password = passwordFieldReg.getText();
         String username = nickField.getText();

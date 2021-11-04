@@ -351,7 +351,6 @@ public class MainController implements Initializable {
                 start = false;
             }
             input.clear();
-            log.debug(selectedFileName + " uploaded");
             fis.close();
             selectedFilePath = null;
             selectedFileName = null;
@@ -444,25 +443,15 @@ public class MainController implements Initializable {
 
     public void connectLost() {
         connectLabel.setText("SERVER: OFF. Reconnect?");
+        log.warn("Connection lost");
         if (showAlert("Connection lost. Reconnect?", Alert.AlertType.CONFIRMATION)) {
-            reconnect();
+            network.reAuth();
         }
-    }
-
-    private void reconnect() {
-        network.getThread().interrupt();
-        network.connect();
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        network.reAuth();
     }
 
     public void labelReconnect(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() == 2) {
-            reconnect();
+            network.reAuth();
         }
     }
 

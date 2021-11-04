@@ -73,12 +73,12 @@ public class Network {
                             }
                         });
                 ChannelFuture future = bootstrap.connect(host, port).sync();
-                future.channel().closeFuture().sync();
                 log.debug("connect");
+                future.channel().closeFuture().sync();
             } catch (Exception e) {
                 log.debug("Network error");
                 e.printStackTrace();
-                showAlert("Network error", Alert.AlertType.ERROR);
+                Platform.runLater(() -> showAlert("Network error", Alert.AlertType.ERROR));
             } finally {
                 workerGroup.shutdownGracefully();
             }
@@ -142,6 +142,8 @@ public class Network {
     }
 
     public void sendRegMessage(String username, String login, String password) {
+        this.login = login;
+        this.password = password;
         sendCommand(Command.regCommand(username, login, password));
     }
 
@@ -170,16 +172,19 @@ public class Network {
     }
 
     public void reAuth() {
+        connect();
+        try {
+            Thread.sleep(100);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         if (login != null && password != null) {
+            log.debug("ReAuth");
             sendAuthMessage(login, password);
         }
     }
 
     public void close() {
         socketChannel.close();
-    }
-
-    public Thread getThread() {
-        return thread;
     }
 }
