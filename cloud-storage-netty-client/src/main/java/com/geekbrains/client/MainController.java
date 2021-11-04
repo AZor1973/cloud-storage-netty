@@ -43,7 +43,6 @@ public class MainController implements Initializable {
     private String selectedFileName;
     private Path selectedFilePath;
     private Path currentPath;
-    private String fileNameToDownload;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -396,8 +395,7 @@ public class MainController implements Initializable {
             fileName = fileName.substring(0, fileName.length() - 6);
             network.sendFileRequest(fileName);
         } else {
-            fileNameToDownload = fileName;
-            output.setText(fileNameToDownload);
+            output.setText(fileName);
             output.requestFocus();
         }
     }
@@ -405,10 +403,9 @@ public class MainController implements Initializable {
     @FXML
     private void downloadRequest() {
         if (!output.getText().isBlank()) {
-            network.sendFileRequest(fileNameToDownload);
+            network.sendFileRequest(output.getText());
             output.clear();
         }
-        fileNameToDownload = null;
         serverListView.requestFocus();
     }
 
@@ -452,7 +449,6 @@ public class MainController implements Initializable {
         if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
             output.clear();
             serverListView.requestFocus();
-            fileNameToDownload = null;
         } else if (keyEvent.getCode() == KeyCode.RIGHT) {
             input.requestFocus();
         }
