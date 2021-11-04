@@ -26,7 +26,6 @@ public class Network {
     private String login;
     private String password;
     private SocketChannel socketChannel;
-    private Thread thread;
 
     public static Network getInstance() {
         if (INSTANCE == null) {
@@ -45,7 +44,7 @@ public class Network {
     }
 
     public void connect() {
-        thread = new Thread(() -> {
+        Thread thread = new Thread(() -> {
             EventLoopGroup workerGroup = new NioEventLoopGroup();
             try {
                 Bootstrap bootstrap = new Bootstrap();
