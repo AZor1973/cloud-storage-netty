@@ -17,7 +17,7 @@ public class App extends Application {
     private Stage primaryStage;
     private Stage authStage;
     private Stage regStage;
-    private FXMLLoader mainLoader;  // для создания getMainController(ниже) для доступа к контроллеру из класса Network
+    private FXMLLoader mainLoader;  // для создания getMainController(ниже)
     private FXMLLoader authLoader;  // --
     private FXMLLoader regLoader;  // --
 
@@ -72,29 +72,30 @@ public class App extends Application {
         getRegController().nickFocus(); // фокус на поле имени (для удобства)
     }
 
-    private AuthController getAuthController() {
-        return authLoader.getController();
-    }
-
-    public MainController getMainController() {
-        return mainLoader.getController();
-    }
-
-    public RegController getRegController() {
-        return regLoader.getController();
-    }
-
     public void switchToMainWindow(String username) {
         primaryStage.show();
         primaryStage.setTitle(username);
         authStage.close();
     }
 
-    public static void main(String[] args) {
-        launch(args);
+    // для доступа к контроллеру из класса Network
+    public MainController getMainController() {
+        return mainLoader.getController();
+    }
+
+    private AuthController getAuthController() {
+        return authLoader.getController();
+    }
+
+    public RegController getRegController() {
+        return regLoader.getController();
     }
 
     public Stage getRegStage() {
         return regStage;
+    }
+
+    public static void main(String[] args) {
+        launch(args);
     }
 }

@@ -49,17 +49,21 @@ public class MainController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         network = Network.getInstance();
         network.connect();
+
         disksBox.getItems().clear();
         for (Path p : FileSystems.getDefault().getRootDirectories()) {
             disksBox.getItems().add(p.toString());
         }
         disksBox.getSelectionModel().select(0);
+
         currentPath = Path.of(disksBox.getSelectionModel().getSelectedItem());
         updateClientListView(currentPath);
+
         ContextMenu clientContextMenu = new ContextMenu();
         ContextMenu serverContextMenu = new ContextMenu();
         clientListView.setContextMenu(clientContextMenu);
         serverListView.setContextMenu(serverContextMenu);
+
         MenuItem parentDirClientItem = new MenuItem("Go to parent directory");
         MenuItem deleteClientItem = new MenuItem("Delete");
         MenuItem newDirClientItem = new MenuItem("Create new directory");
@@ -68,6 +72,7 @@ public class MainController implements Initializable {
         MenuItem deleteServerItem = new MenuItem("Delete");
         MenuItem newDirServerItem = new MenuItem("Create new directory");
         MenuItem renameServerItem = new MenuItem("Rename");
+
         clientContextMenu.getItems().add(parentDirClientItem);
         clientContextMenu.getItems().add(deleteClientItem);
         clientContextMenu.getItems().add(newDirClientItem);
@@ -76,6 +81,7 @@ public class MainController implements Initializable {
         serverContextMenu.getItems().add(deleteServerItem);
         serverContextMenu.getItems().add(newDirServerItem);
         serverContextMenu.getItems().add(renameServerItem);
+
         parentDirClientItem.setOnAction(event -> moveToParent());
         deleteClientItem.setOnAction(event -> deleteFile());
         newDirClientItem.setOnAction(event -> createDir());
@@ -292,6 +298,7 @@ public class MainController implements Initializable {
         clientListView.getItems().addAll(fileListClient);
     }
 
+    // Метка для папок - [DIR]
     private String toStringWithDir(Path path) {
         if (Files.isDirectory(path)) {
             return path.getFileName().toString() + " [DIR]";
@@ -306,12 +313,14 @@ public class MainController implements Initializable {
         serverListView.getItems().addAll(files);
     }
 
+    // Выбор файла для выгрузки с помощью мыши
     public void selectFileToUploadMouse(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() == 2) {
             getFileToUpload();
         }
     }
 
+    // Выбор файла для выгрузки с помощью клавиатуры
     public void selectFileToUploadKey(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER) {
             getFileToUpload();
@@ -320,6 +329,7 @@ public class MainController implements Initializable {
         }
     }
 
+    // Получение данных о фале и передача имени в input(TextField)
     private void getFileToUpload() {
         String fileName = clientListView.getSelectionModel().getSelectedItem();
         if (fileName == null)
@@ -339,6 +349,7 @@ public class MainController implements Initializable {
         }
     }
 
+    // Передача файла на сервер
     public void upload() throws IOException {
         if (!input.getText().isBlank()) {
             long selectedFileSize = Files.size(selectedFilePath);
@@ -358,13 +369,15 @@ public class MainController implements Initializable {
         }
     }
 
+    // Выбор файла для загрузки с помощью мыши
     public void selectFileToDownloadMouse(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() == 2) {
             getFileToDownload();
         }
     }
 
-    public void selectFileToDownloadKey(KeyEvent keyEvent) {
+    // Управление serverListView с помощью клавиатуры
+    public void handleServerListViewKey(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ENTER) {
             getFileToDownload();
         } else if (keyEvent.getCode() == KeyCode.ESCAPE) {
@@ -374,6 +387,7 @@ public class MainController implements Initializable {
         }
     }
 
+    // Передача имени файла для загрузки в output(TextField)
     private void getFileToDownload() {
         String fileName = serverListView.getSelectionModel().getSelectedItem();
         if (fileName == null)
@@ -398,6 +412,7 @@ public class MainController implements Initializable {
         serverListView.requestFocus();
     }
 
+    // Загрузка файла с сервера
     public void download(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos) throws IOException {
         Path path = currentPath.resolve(fileName);
         if (isStart) {
@@ -420,6 +435,7 @@ public class MainController implements Initializable {
         return alert.getResult() == ButtonType.OK;
     }
 
+    // Вспомогательный метод текстового поля
     public void keyHandleInput(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
             input.clear();
@@ -431,6 +447,7 @@ public class MainController implements Initializable {
         }
     }
 
+    // Вспомогательный метод текстового поля
     public void keyHandleOutput(KeyEvent keyEvent) {
         if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
             output.clear();

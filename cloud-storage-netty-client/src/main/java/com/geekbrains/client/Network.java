@@ -60,7 +60,7 @@ public class Network {
                                         new SimpleChannelInboundHandler<Command>() {
                                             @Override
                                             protected void channelRead0(ChannelHandlerContext ctx, Command msg) {
-                                                readMessage(msg);
+                                                readCommand(msg);
                                             }
 
                                             @Override
@@ -87,7 +87,7 @@ public class Network {
         Platform.runLater(() -> App.INSTANCE.getMainController().connectLabel.setText("SERVER: ON"));
     }
 
-    public void readMessage(Command command) {
+    public void readCommand(Command command) {
         if (command.getType() == CommandType.INFO) {
             InfoCommandData data = (InfoCommandData) command.getData();
             log.debug(data.getMessage());

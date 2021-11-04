@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.io.Serial;
 import java.io.Serializable;
+
 @AllArgsConstructor
 @Getter
 public class FileRequestCommandData implements Serializable {

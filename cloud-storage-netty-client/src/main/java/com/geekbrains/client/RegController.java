@@ -8,8 +8,6 @@ import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
-import java.io.IOException;
-
 public class RegController {
     @FXML
     public Button submitRegButton;
@@ -29,7 +27,21 @@ public class RegController {
             return;
         }
         Network.getInstance().sendRegMessage(username, login, password);
+//        Stage stage = (Stage)submitRegButton.getScene().getWindow();
+//        stage.close();
         App.INSTANCE.getRegStage().close();
+    }
+
+    public void showAlert(String message) {
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+
+    // Вспомогательные методы для удобства навигации между полями
+
+    public void nickFocus() {
+        nickField.requestFocus();
     }
 
     public void submitNick() {
@@ -62,15 +74,5 @@ public class RegController {
         } else if (keyEvent.getCode() == KeyCode.DOWN) {
             nickField.requestFocus();
         }
-    }
-
-    public void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setContentText(message);
-        alert.showAndWait();
-    }
-
-    public void nickFocus(){
-        nickField.requestFocus();
     }
 }

@@ -6,6 +6,7 @@ import lombok.Getter;
 import java.io.Serial;
 import java.io.Serializable;
 import java.util.List;
+
 @Getter
 public class Command implements Serializable {
     @Serial
@@ -34,7 +35,7 @@ public class Command implements Serializable {
         return command;
     }
 
-    public static Command fileRequestCommand(String fileName){
+    public static Command fileRequestCommand(String fileName) {
         Command command = new Command();
         command.data = new FileRequestCommandData(fileName);
         command.type = CommandType.FILE_REQUEST;
@@ -48,21 +49,21 @@ public class Command implements Serializable {
         return command;
     }
 
-    public static Command fileInfoCommand(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos){
+    public static Command fileInfoCommand(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos) {
         Command command = new Command();
         command.type = CommandType.FILE_INFO;
         command.data = new FileInfoCommandData(fileName, fileSize, bytes, isStart, endPos);
         return command;
     }
 
-    public static Command infoCommand(String message){
+    public static Command infoCommand(String message) {
         Command command = new Command();
         command.type = CommandType.INFO;
         command.data = new InfoCommandData(message);
         return command;
     }
 
-    public static Command updateFileListCommand(List<String> files){
+    public static Command updateFileListCommand(List<String> files) {
         Command command = new Command();
         command.type = CommandType.UPDATE_FILE_LIST;
         command.data = new UpdateFileListCommandData(files);

@@ -3,12 +3,18 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="163.0" prefWidth="320.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.RegController">
-    <Button fx:id="submitRegButton" layoutX="117.0" layoutY="153.0" mnemonicParsing="false" onAction="#submitRegistration" text="Регистрация" />
-    <Label layoutX="20.0" layoutY="75.0" text="Логин:" AnchorPane.bottomAnchor="110.0" AnchorPane.leftAnchor="20.0" AnchorPane.rightAnchor="260.0" AnchorPane.topAnchor="75.0" />
-    <Label layoutX="18.0" layoutY="117.0" text="Пароль:" AnchorPane.leftAnchor="18.0" AnchorPane.topAnchor="117.0" />
-    <TextField fx:id="loginFieldReg" layoutX="85.0" layoutY="71.0" onAction="#submitLoginReg" onKeyPressed="#goFromLogin" promptText="Input login" />
-    <PasswordField fx:id="passwordFieldReg" layoutX="85.0" layoutY="113.0" onAction="#submitRegistration" onKeyPressed="#goFromPassword" promptText="Input password" />
-   <Label layoutX="27.0" layoutY="31.0" text="Имя:" />
-   <TextField fx:id="nickField" layoutX="85.0" layoutY="27.0" onAction="#submitNick" onKeyPressed="#goFromNick" promptText="Input nick" />
+<AnchorPane prefHeight="163.0" prefWidth="320.0" xmlns="http://javafx.com/javafx/11.0.2"
+            xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.RegController">
+    <Button fx:id="submitRegButton" layoutX="117.0" layoutY="153.0" mnemonicParsing="false"
+            onAction="#submitRegistration" text="Регистрация"/>
+    <Label layoutX="20.0" layoutY="75.0" text="Логин:" AnchorPane.bottomAnchor="110.0" AnchorPane.leftAnchor="20.0"
+           AnchorPane.rightAnchor="260.0" AnchorPane.topAnchor="75.0"/>
+    <Label layoutX="18.0" layoutY="117.0" text="Пароль:" AnchorPane.leftAnchor="18.0" AnchorPane.topAnchor="117.0"/>
+    <TextField fx:id="loginFieldReg" layoutX="85.0" layoutY="71.0" onAction="#submitLoginReg"
+               onKeyPressed="#goFromLogin" promptText="Input login"/>
+    <PasswordField fx:id="passwordFieldReg" layoutX="85.0" layoutY="113.0" onAction="#submitRegistration"
+                   onKeyPressed="#goFromPassword" promptText="Input password"/>
+    <Label layoutX="27.0" layoutY="31.0" text="Имя:"/>
+    <TextField fx:id="nickField" layoutX="85.0" layoutY="27.0" onAction="#submitNick" onKeyPressed="#goFromNick"
+               promptText="Input nick"/>
 </AnchorPane>

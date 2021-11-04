@@ -16,13 +16,26 @@ import java.util.stream.Collectors;
 @Slf4j
 public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     private static final int BUFFER_SIZE = 8192;
-    private final DatabaseService ds = new DatabaseService();
+    private DatabaseService ds;
     private String username;
     private Path pathDir;
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
+        ds = new DatabaseService();
         log.debug("Client connected");
+    }
+
+    @Override
+    public void channelUnregistered(ChannelHandlerContext ctx) {
+        Server.removeClient(username);
+        ds.closeConnection();
+    }
+
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        cause.printStackTrace();
+        ctx.close();
     }
 
     @Override
@@ -232,22 +245,12 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         fileList.add(0, pathDir.toString().substring(5));
         ctx.writeAndFlush(Command.updateFileListCommand(fileList));
     }
+    // Метка для папок - [DIR]
 
     public String toStringWithDir(Path path) {
         if (Files.isDirectory(path)) {
             return path.getFileName().toString() + " [DIR]";
         }
         return path.getFileName().toString();
-    }
-
-    @Override
-    public void channelUnregistered(ChannelHandlerContext ctx) {
-        Server.removeClient(username);
-    }
-
-    @Override
-    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-        cause.printStackTrace();
-        ctx.close();
     }
 }

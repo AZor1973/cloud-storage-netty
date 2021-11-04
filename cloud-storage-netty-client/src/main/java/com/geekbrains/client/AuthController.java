@@ -28,39 +28,6 @@ public class AuthController {
         Network.getInstance().sendAuthMessage(login, password);
     }
 
-    public void submitLogin() {
-        passwordField.requestFocus();
-    }
-
-    public void goFromLogin(KeyEvent keyEvent) {
-        switch (keyEvent.getCode()){
-            case UP -> regButton.requestFocus();
-            case DOWN -> passwordField.requestFocus();
-        }
-    }
-
-    public void goFromPassword(KeyEvent keyEvent) {
-        switch (keyEvent.getCode()){
-            case UP -> loginField.requestFocus();
-            case DOWN -> authButton.requestFocus();
-        }
-    }
-
-    public void goFromEnter(KeyEvent keyEvent) {
-        switch (keyEvent.getCode()){
-            case UP -> passwordField.requestFocus();
-            case DOWN, LEFT -> regButton.requestFocus();
-        }
-    }
-
-    public void goFromReg(KeyEvent keyEvent) {
-        switch (keyEvent.getCode()){
-            case UP -> passwordField.requestFocus();
-            case DOWN -> loginField.requestFocus();
-            case RIGHT -> authButton.requestFocus();
-        }
-    }
-
     public void registration() {
         App.INSTANCE.getRegStage().show();
     }
@@ -71,7 +38,41 @@ public class AuthController {
         alert.showAndWait();
     }
 
+    // Вспомогательные методы для удобства навигации между полями
     public void loginFocus() {
         loginField.requestFocus();
+    }
+
+    public void submitLogin() {
+        passwordField.requestFocus();
+    }
+
+    public void goFromLogin(KeyEvent keyEvent) {
+        switch (keyEvent.getCode()) {
+            case UP -> regButton.requestFocus();
+            case DOWN -> passwordField.requestFocus();
+        }
+    }
+
+    public void goFromPassword(KeyEvent keyEvent) {
+        switch (keyEvent.getCode()) {
+            case UP -> loginField.requestFocus();
+            case DOWN -> authButton.requestFocus();
+        }
+    }
+
+    public void goFromEnter(KeyEvent keyEvent) {
+        switch (keyEvent.getCode()) {
+            case UP -> passwordField.requestFocus();
+            case DOWN, LEFT -> regButton.requestFocus();
+        }
+    }
+
+    public void goFromReg(KeyEvent keyEvent) {
+        switch (keyEvent.getCode()) {
+            case UP -> passwordField.requestFocus();
+            case DOWN -> loginField.requestFocus();
+            case RIGHT -> authButton.requestFocus();
+        }
     }
 }

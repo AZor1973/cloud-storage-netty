@@ -46,7 +46,7 @@ public class DatabaseService {
         try {
             changeUsernameStatement.setString(1, newUsername);
             changeUsernameStatement.setString(2, oldUsername);
-           return changeUsernameStatement.executeUpdate() > 0;
+            return changeUsernameStatement.executeUpdate() > 0;
         } catch (SQLException e) {
             log.error("Failed to database connection");
         }

@@ -11,6 +11,7 @@ import io.netty.handler.codec.serialization.ClassResolvers;
 import io.netty.handler.codec.serialization.ObjectDecoder;
 import io.netty.handler.codec.serialization.ObjectEncoder;
 import lombok.extern.slf4j.Slf4j;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -21,7 +22,6 @@ public class Server {
     private static final List<String> clients = new ArrayList<>();
     private static final Path root = Path.of("root");
     private static final int SERVER_PORT = 8189;
-    private final DatabaseService ds = new DatabaseService();
 
     public Server() {
         EventLoopGroup auth = new NioEventLoopGroup(1);
@@ -49,18 +49,17 @@ public class Server {
         } catch (Exception e) {
             log.error("error: ", e);
         } finally {
-            ds.closeConnection();
             auth.shutdownGracefully();
             worker.shutdownGracefully();
         }
     }
 
-    public static void addClient(String user){
+    public static void addClient(String user) {
         clients.add(user);
         log.debug(user + " added");
     }
 
-    public static void removeClient(String user){
+    public static void removeClient(String user) {
         clients.removeIf(client -> client.equals(user));
         log.debug(user + " removed");
     }
@@ -75,7 +74,7 @@ public class Server {
         return false;
     }
 
-    public static Path getRoot(){
+    public static Path getRoot() {
         return root;
     }
 
