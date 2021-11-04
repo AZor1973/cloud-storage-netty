@@ -24,7 +24,7 @@ public class Server {
     private static final int SERVER_PORT = 8189;
 
     public Server() {
-        EventLoopGroup auth = new NioEventLoopGroup(1);
+        EventLoopGroup auth = new NioEventLoopGroup();
         EventLoopGroup worker = new NioEventLoopGroup();
         try {
             ServerBootstrap bootstrap = new ServerBootstrap();

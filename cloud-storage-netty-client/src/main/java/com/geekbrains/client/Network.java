@@ -127,6 +127,9 @@ public class Network {
 
     public void sendFile(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos) {
         sendCommand(Command.fileInfoCommand(fileName, fileSize, bytes, isStart, endPos));
+        // Без следующей задержки файл на сервере не открывается, хотя размер результата и исходника
+        // совпадают байт в байт. При передаче одним куском всё хорошо.
+        // А вот с сервера на клиент всё передаётся чётко без всякой задержки.
         try {
             Thread.sleep(2);
         } catch (InterruptedException e) {
@@ -172,6 +175,8 @@ public class Network {
 
     public void reAuth() {
         connect();
+        // Похожая ситуация с вышеизложенной. Очевидно сервер не успевает наладить подключение
+        // и сообщение об авторизации пролетает мимо.
         try {
             Thread.sleep(100);
         } catch (InterruptedException e) {
