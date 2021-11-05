@@ -131,7 +131,7 @@ public class Network {
         // совпадают байт в байт. При передаче одним куском всё хорошо.
         // А вот с сервера на клиент всё передаётся чётко без всякой задержки.
         try {
-            Thread.sleep(2);
+            Thread.sleep(5);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

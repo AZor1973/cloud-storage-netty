@@ -19,6 +19,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     private DatabaseService ds;
     private String username;
     private Path pathDir;
+    private int copyNumber;  // Если файл существует - делаем копию, а не удаляем (с учётом загрузки частями).
 
     @Override
     public void channelActive(ChannelHandlerContext ctx) {
@@ -97,10 +98,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         FileInfoCommandData data = (FileInfoCommandData) msg.getData();
         String fileName = data.getFileName();
         long fileSize = data.getFileSize();
-        Path path = pathDir.resolve(fileName);
-        if (data.isStart()) {
-            Files.deleteIfExists(path);
-        }
+        Path path = getPathOfCopy(fileName, data.isStart());
         FileOutputStream fos = new FileOutputStream(path.toString(), true);
         fos.write(data.getBytes(), 0, data.getEndPos());
         if (Files.size(path) == fileSize) {
@@ -110,6 +108,27 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         }
         fos.close();
     }
+
+    // Если файл существует - делаем копию, а не удаляем (с учётом загрузки частями).
+    private Path getPathOfCopy(String fileName, boolean isStart) {
+        Path path = pathDir.resolve(fileName);
+        String name;
+        while (isStart && Files.exists(path)) {
+            copyNumber++;
+            name = fileName.substring(0, fileName.indexOf("."))
+                    + "(" + copyNumber + ")"
+                    + fileName.substring(fileName.indexOf("."));
+            path = pathDir.resolve(name);
+        }
+        if (!isStart && copyNumber != 0) {
+            name = fileName.substring(0, fileName.indexOf("."))
+                    + "(" + copyNumber + ")"
+                    + fileName.substring(fileName.indexOf("."));
+            path = pathDir.resolve(name);
+        }
+        return path;
+    }
+
 
     private void fileDownload(ChannelHandlerContext ctx, Command msg) throws IOException {
         FileRequestCommandData data = (FileRequestCommandData) msg.getData();
