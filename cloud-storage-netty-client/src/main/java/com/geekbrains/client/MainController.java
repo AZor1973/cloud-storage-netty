@@ -41,6 +41,7 @@ public class MainController implements Initializable {
     private static final int BUFFER_SIZE = 8192;
     private Network network;
     private Path currentPath;
+    private int copyNumber = 0;  // Если файл существует - делаем копию, а не удаляем (с учётом загрузки частями).
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -406,18 +407,36 @@ public class MainController implements Initializable {
 
     // Загрузка файла с сервера
     public void download(String fileName, long fileSize, byte[] bytes, boolean isStart, int endPos) throws IOException {
-        Path path = currentPath.resolve(fileName);
-        if (isStart) {
-            Files.deleteIfExists(path);
-        }
+        Path path = getPathOfCopy(fileName, isStart);
         FileOutputStream fos = new FileOutputStream(path.toString(), true);
         fos.write(bytes, 0, endPos);
         if (Files.size(path) == fileSize) {
+            copyNumber = 0;
             updateClientListView(currentPath);
             log.debug(fileName + " downloaded.");
             showAlert(fileName + " downloaded.", Alert.AlertType.INFORMATION);
         }
         fos.close();
+    }
+
+    // Если файл существует - делаем копию, а не удаляем (с учётом загрузки частями).
+    private Path getPathOfCopy(String fileName, boolean isStart) {
+        Path path = currentPath.resolve(fileName);
+        String name;
+        while (isStart && Files.exists(path)) {
+            copyNumber++;
+            name = fileName.substring(0, fileName.indexOf("."))
+                    + "(" + copyNumber + ")"
+                    + fileName.substring(fileName.indexOf("."));
+            path = currentPath.resolve(name);
+        }
+        if (!isStart && copyNumber != 0) {
+            name = fileName.substring(0, fileName.indexOf("."))
+                    + "(" + copyNumber + ")"
+                    + fileName.substring(fileName.indexOf("."));
+            path = currentPath.resolve(name);
+        }
+        return path;
     }
 
     private boolean showAlert(String message, Alert.AlertType type) {
