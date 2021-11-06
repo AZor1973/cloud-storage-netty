@@ -44,6 +44,7 @@ public class App extends Application {
         mainLoader.setLocation(getClass().getResource(MAIN_FXML));
         Parent root = mainLoader.load();
         this.primaryStage.setScene(new Scene(root));
+        primaryStage.getScene().getStylesheets().add("com/geekbrains/client/sky.css");
         primaryStage.setOnCloseRequest(we -> Network.getInstance().close());
     }
 
@@ -55,6 +56,7 @@ public class App extends Application {
         authStage.initOwner(primaryStage);
         authStage.initModality(Modality.WINDOW_MODAL);
         authStage.setScene(new Scene(authDialogPanel));
+        authStage.getScene().getStylesheets().add("com/geekbrains/client/sky.css");
         authStage.setResizable(false);
         getAuthController().loginFocus();  // фокус на поле логина (для удобства)
         authStage.setOnCloseRequest(we -> Network.getInstance().close());
@@ -68,6 +70,7 @@ public class App extends Application {
         regStage.initOwner(authStage);
         regStage.initModality(Modality.WINDOW_MODAL);
         regStage.setScene(new Scene(regPanel));
+        regStage.getScene().getStylesheets().add("com/geekbrains/client/sky.css");
         regStage.setResizable(false);
         getRegController().nickFocus(); // фокус на поле имени (для удобства)
     }

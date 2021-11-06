@@ -8,6 +8,7 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+
 import java.io.*;
 import java.net.URL;
 import java.nio.file.*;
@@ -132,6 +133,8 @@ public class MainController implements Initializable {
         alert.setTitle("Deleting a directory");
         alert.setHeaderText("Deleting a directory");
         alert.setContentText("Are you sure?\n" + str + " will be deleted with all files inside!");
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
         alert.showAndWait();
         return alert.getResult() == ButtonType.CANCEL;
     }
@@ -141,16 +144,14 @@ public class MainController implements Initializable {
         alert.setTitle("Deletion");
         alert.setHeaderText("Deletion");
         alert.setContentText("Are you sure?\n" + str + " will be deleted!");
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
         alert.showAndWait();
         return alert.getResult() == ButtonType.CANCEL;
     }
 
     private void createDir() {
-        TextInputDialog editDialog = new TextInputDialog("Enter directory name");
-        editDialog.setTitle("Create a directory");
-        editDialog.setHeaderText("Enter directory name");
-        editDialog.setContentText("Directory name:");
-        Optional<String> optName = editDialog.showAndWait();
+        Optional<String> optName = getNewNameFromDialog("Enter directory name", "Create a directory", "Directory name:");
         if (optName.isPresent()) {
             String name = optName.get();
             Path path = currentPath.resolve(name);
@@ -165,6 +166,16 @@ public class MainController implements Initializable {
             log.debug(name + " created");
             showAlert(name + " created", Alert.AlertType.INFORMATION);
         }
+    }
+
+    private Optional<String> getNewNameFromDialog(String s, String s2, String s3) {
+        TextInputDialog editDialog = new TextInputDialog(s);
+        editDialog.setTitle(s2);
+        editDialog.setHeaderText(s);
+        editDialog.setContentText(s3);
+        DialogPane dialogPane = editDialog.getDialogPane();
+        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
+        return editDialog.showAndWait();
     }
 
     private void renameFile() {
@@ -250,11 +261,7 @@ public class MainController implements Initializable {
     }
 
     private void createDirRequest() {
-        TextInputDialog editDialog = new TextInputDialog("Enter directory name");
-        editDialog.setTitle("Create a directory");
-        editDialog.setHeaderText("Enter directory name");
-        editDialog.setContentText("Directory name:");
-        Optional<String> optName = editDialog.showAndWait();
+        Optional<String> optName = getNewNameFromDialog("Enter directory name", "Create a directory", "Directory name:");
         if (optName.isPresent()) {
             String name = optName.get();
             try {
@@ -441,6 +448,8 @@ public class MainController implements Initializable {
     private boolean showAlert(String message, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setContentText(message);
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
         alert.showAndWait();
         return alert.getResult() == ButtonType.OK;
     }
@@ -480,11 +489,7 @@ public class MainController implements Initializable {
     }
 
     public void changeUsername() {
-        TextInputDialog editDialog = new TextInputDialog("Enter new name");
-        editDialog.setTitle("Change nick");
-        editDialog.setHeaderText("Enter new name");
-        editDialog.setContentText("New name:");
-        Optional<String> optName = editDialog.showAndWait();
+        Optional<String> optName = getNewNameFromDialog("Enter new name", "Change nick", "New name:");
         if (optName.isPresent()) {
             String name = optName.get();
             network.sendChangeUsername(name);

@@ -11,6 +11,7 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.codec.serialization.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
+import javafx.scene.control.DialogPane;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
@@ -118,6 +119,8 @@ public class Network {
     public void showAlert(String message, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setContentText(message);
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
         alert.showAndWait();
     }
 

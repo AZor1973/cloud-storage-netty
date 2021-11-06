@@ -1,10 +1,7 @@
 package com.geekbrains.client;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 
 public class AuthController {
@@ -35,6 +32,8 @@ public class AuthController {
     public void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setContentText(message);
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
         alert.showAndWait();
     }
 

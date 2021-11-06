@@ -1,10 +1,7 @@
 package com.geekbrains.client;
 
 import javafx.fxml.FXML;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.PasswordField;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
@@ -27,14 +24,14 @@ public class RegController {
             return;
         }
         Network.getInstance().sendRegMessage(username, login, password);
-//        Stage stage = (Stage)submitRegButton.getScene().getWindow();
-//        stage.close();
         App.INSTANCE.getRegStage().close();
     }
 
     public void showAlert(String message) {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setContentText(message);
+        DialogPane dialogPane = alert.getDialogPane();
+        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
         alert.showAndWait();
     }
 

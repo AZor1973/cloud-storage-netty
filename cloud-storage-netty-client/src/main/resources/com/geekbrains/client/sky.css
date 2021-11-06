@@ -1,0 +1,59 @@
+/**
+ * Name: JavaFX Sky look n feel
+ * Publisher: Apress
+ * Author: Carl Dea
+ *
+ */
+.root {
+    -fx-font-size: 12pt;
+    -fx-background: sky-blue;
+    sky-blue: rgb(17, 145, 213);
+    brighter-sky-blue: derive( sky-blue , 50% );
+}
+
+.list-view, .label, .text-field{
+    -fx-font: bold italic 12pt "LucidaBrightDemiBold";
+}
+
+.scroll-bar:horizontal .thumb {
+    -fx-background-color: brighter-sky-blue;
+}
+.scroll-bar:vertical .thumb {
+    -fx-background-color: brighter-sky-blue;
+}
+
+.button{
+    -fx-text-fill: brighter-sky-blue;
+    -fx-border-color: rgba(255, 255, 255, .80);
+    -fx-border-radius: 8;
+    -fx-padding: 6 6 6 6;
+    -fx-font: bold italic 12pt "LucidaBrightDemiBold";
+}
+
+.borders{
+    -fx-border-color: rgba(255, 255, 255, .80);
+    -fx-border-style: dotted;
+    -fx-border-width: 1;
+    -fx-border-insets: -2;
+}
+
+.arrowButton {
+    -fx-text-fill: brighter-sky-blue;
+    -fx-border-color: rgba(255, 255, 255, .80);
+    -fx-border-radius: 8;
+    -fx-padding: 6 6 6 6;
+    -fx-font: bold italic 20pt "LucidaBrightDemiBold";
+}
+
+.combo-box .arrow{
+    -fx-background-color: brighter-sky-blue;
+}
+
+.combo-box .list-cell{
+    -fx-text-fill: brighter-sky-blue;
+    -fx-font: bold italic 12pt "LucidaBrightDemiBold";
+}
+
+.combo-box-popup .list-view .list-cell:filled:hover {
+    -fx-text-fill: white;
+}

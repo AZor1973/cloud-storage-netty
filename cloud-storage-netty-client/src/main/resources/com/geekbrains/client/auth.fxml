@@ -1,18 +1,31 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="200.0" prefWidth="320.0" xmlns="http://javafx.com/javafx/11.0.2"
-            xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.AuthController">
-    <Button fx:id="regButton" layoutX="149.0" layoutY="140.0" mnemonicParsing="false" onAction="#registration"
-            onKeyPressed="#goFromReg" text="Регистрация"/>
-    <Label layoutX="20.0" layoutY="34.0" text="Логин:" AnchorPane.bottomAnchor="151.0" AnchorPane.leftAnchor="20.0"
-           AnchorPane.rightAnchor="260.0" AnchorPane.topAnchor="34.0"/>
-    <Label layoutX="18.0" layoutY="89.0" text="Пароль:" AnchorPane.leftAnchor="18.0" AnchorPane.topAnchor="89.0"/>
-    <TextField fx:id="loginField" layoutX="85.0" layoutY="30.0" onAction="#submitLogin" onKeyPressed="#goFromLogin"/>
-    <PasswordField fx:id="passwordField" layoutX="85.0" layoutY="85.0" onAction="#executeAuth"
-                   onKeyPressed="#goFromPassword"/>
-    <Button fx:id="authButton" layoutX="85.0" layoutY="140.0" mnemonicParsing="false" onAction="#executeAuth"
-            onKeyPressed="#goFromEnter" text="Войти!"/>
+<AnchorPane prefHeight="200.0" prefWidth="360.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.AuthController">
+    <VBox alignment="CENTER" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+        <HBox alignment="CENTER" focusTraversable="true" VBox.vgrow="ALWAYS">
+            <Label prefWidth="70.0" text="Логин:" />
+            <TextField fx:id="loginField" onAction="#submitLogin" onKeyPressed="#goFromLogin">
+            <HBox.margin>
+               <Insets left="10.0" />
+            </HBox.margin></TextField>
+        </HBox>
+        <HBox alignment="CENTER" focusTraversable="true" VBox.vgrow="ALWAYS">
+            <Label prefWidth="70.0" text="Пароль:" />
+            <PasswordField fx:id="passwordField" onAction="#executeAuth" onKeyPressed="#goFromPassword">
+            <HBox.margin>
+               <Insets left="10.0" />
+            </HBox.margin></PasswordField>
+        </HBox>
+        <HBox alignment="CENTER" focusTraversable="true" VBox.vgrow="ALWAYS">
+            <Button fx:id="authButton" mnemonicParsing="false" onAction="#executeAuth" onKeyPressed="#goFromEnter" text="Войти!" />
+            <Button fx:id="regButton" mnemonicParsing="false" onAction="#registration" onKeyPressed="#goFromReg" text="Регистрация">
+            <HBox.margin>
+               <Insets left="30.0" />
+            </HBox.margin></Button>
+        </HBox>
+    </VBox>
 </AnchorPane>
