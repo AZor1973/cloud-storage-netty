@@ -12,5 +12,5 @@ import java.util.List;
 public class UpdateFileListCommandData implements Serializable {
     @Serial
     private static final long serialVersionUID = -5123678701220477249L;
-    private List<String> files;
+    private List<FileInfoCommandData> files;
 }

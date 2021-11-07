@@ -1,5 +1,6 @@
 package com.geekbrains.client;
 
+import com.geekbrains.common.commands.FileInfoCommandData;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -27,9 +28,9 @@ public class MainController implements Initializable {
     @FXML
     public Button downloadButton;
     @FXML
-    public ListView<String> serverListView;
+    public ListView<FileInfoCommandData> serverListView;
     @FXML
-    public ListView<String> clientListView;
+    public ListView<FileInfoCommandData> clientListView;
     @FXML
     public Label currentPathLabelClient;
     @FXML
@@ -104,12 +105,9 @@ public class MainController implements Initializable {
     }
 
     private void deleteFile() {
-        String fileName = clientListView.getSelectionModel().getSelectedItem();
+        String fileName = clientListView.getSelectionModel().getSelectedItem().getName();
         if (fileName == null) {
             return;
-        }
-        if (fileName.endsWith("[DIR]")) {
-            fileName = fileName.substring(0, fileName.length() - 6);
         }
         if (deleteFileAlert(fileName)) return;
         Path path = currentPath.resolve(fileName);
@@ -151,9 +149,8 @@ public class MainController implements Initializable {
     }
 
     private void createDir() {
-        Optional<String> optName = getNewNameFromDialog("Enter directory name", "Create a directory", "Directory name:");
-        if (optName.isPresent()) {
-            String name = optName.get();
+        String name = getNewNameFromDialog("Enter directory name", "Create a directory", "Directory name:");
+        if (!name.isBlank()) {
             Path path = currentPath.resolve(name);
             if (!Files.exists(path)) {
                 try {
@@ -168,30 +165,30 @@ public class MainController implements Initializable {
         }
     }
 
-    private Optional<String> getNewNameFromDialog(String s, String s2, String s3) {
-        TextInputDialog editDialog = new TextInputDialog(s);
+    private String getNewNameFromDialog(String s, String s2, String s3) {
+        TextInputDialog editDialog = new TextInputDialog();
         editDialog.setTitle(s2);
         editDialog.setHeaderText(s);
         editDialog.setContentText(s3);
         DialogPane dialogPane = editDialog.getDialogPane();
         dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
-        return editDialog.showAndWait();
+        Optional<String> optName = editDialog.showAndWait();
+        return optName.orElse("");
     }
 
     private void renameFile() {
-        String file;
-        if ((file = clientListView.getSelectionModel().getSelectedItem()) != null) {
-            if (file.endsWith("[DIR]")) {
-                file = file.substring(0, file.length() - 6);
-            }
+        String file, name, extension = "";
+        if ((file = clientListView.getSelectionModel().getSelectedItem().getName()) != null) {
             Path path = Path.of(currentPath.toString(), file);
-            TextInputDialog editDialog = new TextInputDialog();
-            editDialog.setTitle("Rename file");
-            editDialog.setHeaderText(file + " will be renamed!");
-            editDialog.setContentText("New name:");
-            Optional<String> optName = editDialog.showAndWait();
-            if (optName.isPresent()) {
-                String newName = optName.get();
+            if (file.contains(".") && !file.startsWith(".")) {
+                name = file.substring(0, file.lastIndexOf("."));
+                extension = file.substring(file.lastIndexOf("."));
+            } else {
+                name = file;
+            }
+            String newName = getNewNameFromDialog(name + " will be renamed!", "Rename file", "New name:");
+            if (!newName.isBlank()) {
+                newName += extension;
                 Path newPath = currentPath.resolve(newName);
                 if (!Files.exists(newPath)) {
                     try {
@@ -242,18 +239,18 @@ public class MainController implements Initializable {
     }
 
     private void deleteRequest() {
-        String str = serverListView.getSelectionModel().getSelectedItem();
-        if (str == null) {
+        String name = serverListView.getSelectionModel().getSelectedItem().getName();
+        if (name == null) {
             return;
         }
-        if (deleteFileAlert(str)) return;
-        if (!str.isEmpty()) {
-            if (str.endsWith("[DIR]")) {
-                str = str.substring(0, str.length() - 6);
-                if (deleteDirAlert(str)) return;
+        if (deleteFileAlert(name)) return;
+        if (!name.isEmpty()) {
+            if (name.endsWith("[DIR]")) {
+                name = name.substring(0, name.length() - 6);
+                if (deleteDirAlert(name)) return;
             }
             try {
-                network.sendDeleteRequest(str);
+                network.sendDeleteRequest(name);
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -261,9 +258,8 @@ public class MainController implements Initializable {
     }
 
     private void createDirRequest() {
-        Optional<String> optName = getNewNameFromDialog("Enter directory name", "Create a directory", "Directory name:");
-        if (optName.isPresent()) {
-            String name = optName.get();
+        String name = getNewNameFromDialog("Enter directory name", "Create a directory", "Directory name:");
+        if (!name.isBlank()) {
             try {
                 network.sendCreateDirRequest(name);
             } catch (IOException e) {
@@ -273,45 +269,45 @@ public class MainController implements Initializable {
     }
 
     private void renameRequest() {
-        String file;
-        if ((file = serverListView.getSelectionModel().getSelectedItem()) != null) {
-            if (file.endsWith("[DIR]")) {
-                file = file.substring(0, file.length() - 6);
-            }
-            TextInputDialog editDialog = new TextInputDialog();
-            editDialog.setTitle("Rename file");
-            editDialog.setHeaderText(file + " will be renamed!");
-            editDialog.setContentText("New name:");
-            Optional<String> optName = editDialog.showAndWait();
-            if (optName.isPresent()) {
-                String newName = optName.get();
-                network.sendRenameRequest(file, newName);
-            }
+        if (serverListView.getSelectionModel().getSelectedItem() == null) {
+            return;
+        }
+        String oldName = serverListView.getSelectionModel().getSelectedItem().getName();
+        String name, extension = "";
+        if (oldName.contains(".") && !oldName.startsWith(".")){
+            name = oldName.substring(0, oldName.lastIndexOf("."));
+            extension = oldName.substring(oldName.lastIndexOf("."));
+        }else {
+            name = oldName;
+        }
+        String newName = getNewNameFromDialog(name + " will be renamed!", "Rename file", "New name:");
+        if (!newName.isBlank()) {
+            newName += extension;
+            network.sendRenameRequest(oldName, newName);
         }
     }
 
     public void updateClientListView(Path path) {
         currentPathLabelClient.setText(currentPath.toString());
         clientListView.getItems().clear();
-        List<String> fileListClient = new ArrayList<>();
+        List<FileInfoCommandData> fileListClient = new ArrayList<>();
         try {
-            fileListClient.addAll(Files.list(path).map(this::toStringWithDir).collect(Collectors.toList()));
+            fileListClient.addAll(Files.list(path).map(p -> {
+                try {
+                    return new FileInfoCommandData(p);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return null;
+            }).collect(Collectors.toList()));
         } catch (IOException e) {
             e.printStackTrace();
         }
         clientListView.getItems().addAll(fileListClient);
     }
 
-    // Метка для папок - [DIR]
-    private String toStringWithDir(Path path) {
-        if (Files.isDirectory(path)) {
-            return path.getFileName().toString() + " [DIR]";
-        }
-        return path.getFileName().toString();
-    }
-
-    public void updateServerListView(List<String> files) {
-        currentPathLabelServer.setText(files.get(0));
+    public void updateServerListView(List<FileInfoCommandData> files) {
+        currentPathLabelServer.setText(files.get(0).getName());
         files.remove(0);
         serverListView.getItems().clear();
         serverListView.getItems().addAll(files);
@@ -335,13 +331,11 @@ public class MainController implements Initializable {
 
     // Получение данных о фале и передача имени в input(TextField)
     private void getFileToUpload() {
-        String fileName = clientListView.getSelectionModel().getSelectedItem();
-        if (fileName == null)
+        if (clientListView.getSelectionModel().getSelectedItem() == null) {
             return;
-        if (fileName.endsWith("[DIR]")) {
-            fileName = fileName.substring(0, fileName.length() - 6);
         }
-        Path path = currentPath.resolve(fileName);
+        String fileName = clientListView.getSelectionModel().getSelectedItem().getName();
+        Path path = clientListView.getSelectionModel().getSelectedItem().getPath();
         if (Files.isDirectory(path)) {
             currentPath = path;
             updateClientListView(currentPath);
@@ -390,11 +384,11 @@ public class MainController implements Initializable {
 
     // Передача имени файла для загрузки в output(TextField)
     private void getFileToDownload() {
-        String fileName = serverListView.getSelectionModel().getSelectedItem();
-        if (fileName == null)
+        if (serverListView.getSelectionModel().getSelectedItem() == null) {
             return;
-        if (fileName.endsWith("[DIR]")) {
-            fileName = fileName.substring(0, fileName.length() - 6);
+        }
+        String fileName = serverListView.getSelectionModel().getSelectedItem().getName();
+        if (serverListView.getSelectionModel().getSelectedItem().getType().equals(FileInfoCommandData.DIRECTORY)) {
             network.sendFileRequest(fileName);
         } else {
             output.setText(fileName);
@@ -431,15 +425,19 @@ public class MainController implements Initializable {
         String name;
         while (isStart && Files.exists(path)) {
             copyNumber++;
-            name = fileName.substring(0, fileName.indexOf("."))
-                    + "(" + copyNumber + ")"
-                    + fileName.substring(fileName.indexOf("."));
+            if (fileName.contains(".") && !fileName.startsWith(".")) {
+                name = fileName.substring(0, fileName.lastIndexOf("."))
+                        + "(" + copyNumber + ")"
+                        + fileName.substring(fileName.lastIndexOf("."));
+            } else {
+                name = fileName + "(" + copyNumber + ")";
+            }
             path = currentPath.resolve(name);
         }
         if (!isStart && copyNumber != 0) {
-            name = fileName.substring(0, fileName.indexOf("."))
+            name = fileName.substring(0, fileName.lastIndexOf("."))
                     + "(" + copyNumber + ")"
-                    + fileName.substring(fileName.indexOf("."));
+                    + fileName.substring(fileName.lastIndexOf("."));
             path = currentPath.resolve(name);
         }
         return path;
@@ -489,9 +487,8 @@ public class MainController implements Initializable {
     }
 
     public void changeUsername() {
-        Optional<String> optName = getNewNameFromDialog("Enter new name", "Change nick", "New name:");
-        if (optName.isPresent()) {
-            String name = optName.get();
+        String name = getNewNameFromDialog("Enter new name", "Change nick", "New name:");
+        if (!name.isBlank()) {
             network.sendChangeUsername(name);
         }
     }

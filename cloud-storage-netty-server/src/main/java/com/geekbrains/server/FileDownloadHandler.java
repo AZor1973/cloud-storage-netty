@@ -6,7 +6,6 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
-
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -96,12 +95,13 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
 
     private void fileUpload(ChannelHandlerContext ctx, Command msg) throws IOException {
         FileInfoCommandData data = (FileInfoCommandData) msg.getData();
-        String fileName = data.getFileName();
-        long fileSize = data.getFileSize();
+        String fileName = data.getName();
+        long fileSize = data.getSize();
         Path path = getPathOfCopy(fileName, data.isStart());
         FileOutputStream fos = new FileOutputStream(path.toString(), true);
         fos.write(data.getBytes(), 0, data.getEndPos());
         if (Files.size(path) == fileSize) {
+            copyNumber = 0;
             ctx.writeAndFlush(Command.infoCommand(fileName + " uploaded."));
             updateFileList(ctx, pathDir);
             log.debug("wrote: {}", fileName);
@@ -115,9 +115,13 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         String name;
         while (isStart && Files.exists(path)) {
             copyNumber++;
-            name = fileName.substring(0, fileName.indexOf("."))
-                    + "(" + copyNumber + ")"
-                    + fileName.substring(fileName.indexOf("."));
+            if (fileName.contains(".") && !fileName.startsWith(".")){
+                name = fileName.substring(0, fileName.indexOf("."))
+                        + "(" + copyNumber + ")"
+                        + fileName.substring(fileName.indexOf("."));
+            }else {
+                name = fileName + "(" + copyNumber + ")";
+            }
             path = pathDir.resolve(name);
         }
         if (!isStart && copyNumber != 0) {
@@ -257,19 +261,17 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     private void updateFileList(ChannelHandlerContext ctx, Path path) throws IOException {
-        List<String> fileList;
+        List<FileInfoCommandData> fileList;
         fileList = Files.list(path)
-                .map(this::toStringWithDir)
-                .collect(Collectors.toList());
-        fileList.add(0, pathDir.toString().substring(5));
+                .map(p -> {
+                    try {
+                        return new FileInfoCommandData(p, Files.size(p));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                    return null;
+                }).collect(Collectors.toList());
+        fileList.add(0, new FileInfoCommandData(pathDir, Files.size(pathDir)));
         ctx.writeAndFlush(Command.updateFileListCommand(fileList));
-    }
-    // Метка для папок - [DIR]
-
-    public String toStringWithDir(Path path) {
-        if (Files.isDirectory(path)) {
-            return path.getFileName().toString() + " [DIR]";
-        }
-        return path.getFileName().toString();
     }
 }

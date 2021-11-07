@@ -63,10 +63,11 @@ public class Command implements Serializable {
         return command;
     }
 
-    public static Command updateFileListCommand(List<String> files) {
+    public static Command updateFileListCommand(List<FileInfoCommandData> files) {
         Command command = new Command();
         command.type = CommandType.UPDATE_FILE_LIST;
         command.data = new UpdateFileListCommandData(files);
+        System.out.println();
         return command;
     }
 

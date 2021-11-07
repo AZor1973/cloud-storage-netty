@@ -13,7 +13,6 @@ import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import javafx.scene.control.DialogPane;
 import lombok.extern.slf4j.Slf4j;
-
 import java.io.IOException;
 
 @Slf4j
@@ -102,13 +101,14 @@ public class Network {
             log.debug("Auth OK: " + data.getUsername());
             Platform.runLater(() -> App.INSTANCE.switchToMainWindow(data.getUsername()));
         } else if (command.getType() == CommandType.UPDATE_FILE_LIST) {
+            System.out.println("received");
             UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
             Platform.runLater(() -> App.INSTANCE.getMainController().updateServerListView(data.getFiles()));
         } else if (command.getType() == CommandType.FILE_INFO) {
             FileInfoCommandData data = (FileInfoCommandData) command.getData();
             Platform.runLater(() -> {
                 try {
-                    App.INSTANCE.getMainController().download(data.getFileName(), data.getFileSize(), data.getBytes(), data.isStart(), data.getEndPos());
+                    App.INSTANCE.getMainController().download(data.getName(), data.getSize(), data.getBytes(), data.isStart(), data.getEndPos());
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
