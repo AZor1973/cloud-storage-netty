@@ -1,8 +1,8 @@
 .root {
     -fx-font-size: 12pt;
     -fx-background: sky-blue;
-    sky-blue: rgb(17, 145, 213);
-    brighter-sky-blue: derive(sky-blue, 50%);
+    sky-blue: rgb(0, 123, 167);
+    brighter-sky-blue: rgb(29, 172, 214);
     -fx-focus-color: yellow;
 }
 
@@ -23,7 +23,7 @@
 }
 
 .button {
-    -fx-text-fill: brighter-sky-blue;
+    -fx-text-fill: sky-blue;
     -fx-border-color: rgba(255, 255, 255, .80);
     -fx-border-radius: 8;
     -fx-padding: 6 6 6 6;
@@ -38,7 +38,7 @@
 }
 
 .arrowButton {
-    -fx-text-fill: brighter-sky-blue;
+    -fx-text-fill: sky-blue;
     -fx-border-color: rgba(255, 255, 255, .80);
     -fx-border-radius: 8;
     -fx-padding: 6 6 6 6;
@@ -46,11 +46,11 @@
 }
 
 .combo-box .arrow {
-    -fx-background-color: brighter-sky-blue;
+    -fx-background-color: sky-blue;
 }
 
 .combo-box .list-cell {
-    -fx-text-fill: brighter-sky-blue;
+    -fx-text-fill: sky-blue;
     -fx-font: bold italic 12pt "LucidaBrightDemiBold";
 }
 

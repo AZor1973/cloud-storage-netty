@@ -99,7 +99,9 @@ public class Network {
         } else if (command.getType() == CommandType.AUTH_OK) {
             AuthOkCommandData data = (AuthOkCommandData) command.getData();
             log.debug("Auth OK: " + data.getUsername());
-            Platform.runLater(() -> App.INSTANCE.switchToMainWindow(data.getUsername()));
+            String username = data.getUsername();
+            Platform.runLater(() -> App.INSTANCE.switchToMainWindow(username));
+            Platform.runLater(() -> App.INSTANCE.getMainController().showAlert("You are signed in as " + username, Alert.AlertType.INFORMATION));
         } else if (command.getType() == CommandType.UPDATE_FILE_LIST) {
             UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
             Platform.runLater(() -> App.INSTANCE.getMainController().updateServerListView(data.getFiles()));
