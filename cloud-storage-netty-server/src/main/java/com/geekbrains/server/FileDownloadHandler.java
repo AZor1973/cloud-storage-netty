@@ -177,9 +177,9 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
                 FileUtils.forceDelete(new File(String.valueOf(path)));
             } else {
                 Files.delete(path);
-                ctx.writeAndFlush(Command.infoCommand(fileNameToDelete + " deleted."));
-                log.debug(fileNameToDelete + " deleted.");
             }
+            ctx.writeAndFlush(Command.infoCommand(fileNameToDelete + " deleted."));
+            log.debug(fileNameToDelete + " deleted.");
         }
         updateFileList(ctx, pathDir);
     }

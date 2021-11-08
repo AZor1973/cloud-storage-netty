@@ -40,6 +40,8 @@ public class MainController implements Initializable {
     @FXML
     public ComboBox<String> disksBox;
     private static final int BUFFER_SIZE = 8192;
+    private static final String WARN_RESOURCE = "com/geekbrains/client/warn.css";
+    private static final String INFO_RESOURCE = "com/geekbrains/client/info.css";
     private Network network;
     private Path currentPath;
     private int copyNumber = 0;  // Если файл существует - делаем копию, а не удаляем (с учётом загрузки частями).
@@ -132,7 +134,7 @@ public class MainController implements Initializable {
         alert.setHeaderText("Deleting a directory");
         alert.setContentText("Are you sure?\n" + str + " will be deleted with all files inside!");
         DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
+        dialogPane.getStylesheets().add(WARN_RESOURCE);
         alert.showAndWait();
         return alert.getResult() == ButtonType.CANCEL;
     }
@@ -143,7 +145,7 @@ public class MainController implements Initializable {
         alert.setHeaderText("Deletion");
         alert.setContentText("Are you sure?\n" + str + " will be deleted!");
         DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
+        dialogPane.getStylesheets().add(WARN_RESOURCE);
         alert.showAndWait();
         return alert.getResult() == ButtonType.CANCEL;
     }
@@ -171,15 +173,16 @@ public class MainController implements Initializable {
         editDialog.setHeaderText(s);
         editDialog.setContentText(s3);
         DialogPane dialogPane = editDialog.getDialogPane();
-        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
+        dialogPane.getStylesheets().add(INFO_RESOURCE);
         Optional<String> optName = editDialog.showAndWait();
         return optName.orElse("");
     }
 
     private void renameFile() {
-        String file, name, extension = "";
-        if ((file = clientListView.getSelectionModel().getSelectedItem().getName()) != null) {
+        if (clientListView.getSelectionModel().getSelectedItem() != null) {
+            String file = clientListView.getSelectionModel().getSelectedItem().getName();
             Path path = Path.of(currentPath.toString(), file);
+            String name, extension = "";
             if (file.contains(".") && !file.startsWith(".")) {
                 name = file.substring(0, file.lastIndexOf("."));
                 extension = file.substring(file.lastIndexOf("."));
@@ -245,8 +248,7 @@ public class MainController implements Initializable {
         }
         if (deleteFileAlert(name)) return;
         if (!name.isEmpty()) {
-            if (name.endsWith("[DIR]")) {
-                name = name.substring(0, name.length() - 6);
+            if (serverListView.getSelectionModel().getSelectedItem().getType().equals(FileInfoCommandData.DIRECTORY)) {
                 if (deleteDirAlert(name)) return;
             }
             try {
@@ -443,11 +445,15 @@ public class MainController implements Initializable {
         return path;
     }
 
-    private boolean showAlert(String message, Alert.AlertType type) {
+    boolean showAlert(String message, Alert.AlertType type) {
         Alert alert = new Alert(type);
         alert.setContentText(message);
         DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
+        if (type.equals(Alert.AlertType.ERROR)) {
+            dialogPane.getStylesheets().add(WARN_RESOURCE);
+        }else {
+            dialogPane.getStylesheets().add(INFO_RESOURCE);
+        }
         alert.showAndWait();
         return alert.getResult() == ButtonType.OK;
     }

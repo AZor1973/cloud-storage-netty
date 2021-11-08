@@ -1,9 +1,3 @@
-/**
- * Name: JavaFX Sky look n feel
- * Publisher: Apress
- * Author: Carl Dea
- *
- */
 .root {
     -fx-font-size: 12pt;
     -fx-background: sky-blue;

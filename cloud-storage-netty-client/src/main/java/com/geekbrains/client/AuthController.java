@@ -33,7 +33,7 @@ public class AuthController {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setContentText(message);
         DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add("com/geekbrains/client/myDialogs.css");
+        dialogPane.getStylesheets().add("com/geekbrains/client/warn.css");
         alert.showAndWait();
     }
 
