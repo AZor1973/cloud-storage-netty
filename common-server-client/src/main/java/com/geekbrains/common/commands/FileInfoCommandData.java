@@ -21,7 +21,7 @@ public class FileInfoCommandData implements Serializable {
     private boolean isStart;
     private int endPos;
 
-    public FileInfoCommandData(String name, long size, byte[] bytes, boolean isStart, int endPos){
+    public FileInfoCommandData(String name, long size, byte[] bytes, boolean isStart, int endPos) {
         this.name = name;
         this.size = size;
         this.bytes = bytes;
@@ -36,7 +36,7 @@ public class FileInfoCommandData implements Serializable {
         size = Files.size(path);
     }
 
-    public FileInfoCommandData(Path path, long size){
+    public FileInfoCommandData(Path path, long size) {
         name = path.getFileName().toString();
         this.size = size;
         type = getFileType(path);
@@ -45,7 +45,7 @@ public class FileInfoCommandData implements Serializable {
     private String getFileType(Path path) {
         if (Files.isDirectory(path)) {
             return DIRECTORY;
-        } else if (name.contains(".") && !name.startsWith(".")){
+        } else if (name.contains(".") && !name.startsWith(".")) {
             return name.substring(name.lastIndexOf(".") + 1) + " file";
         }
         return "file";
@@ -55,7 +55,7 @@ public class FileInfoCommandData implements Serializable {
     public String toString() {
         if (type.equals(DIRECTORY)) {
             return String.format("%s   %s", name, type);
-        }else if (name.contains(".") && !name.startsWith(".")) {
+        } else if (name.contains(".") && !name.startsWith(".")) {
             return String.format("%s   %s   %s", name.substring(0, name.lastIndexOf(".")), type, getSizeToString());
         }
         return String.format("%s   %s   %s", name, type, getSize());

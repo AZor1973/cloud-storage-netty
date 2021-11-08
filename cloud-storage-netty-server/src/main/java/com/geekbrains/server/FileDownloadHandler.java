@@ -6,6 +6,7 @@ import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
+
 import java.io.*;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -115,11 +116,11 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         String name;
         while (isStart && Files.exists(path)) {
             copyNumber++;
-            if (fileName.contains(".") && !fileName.startsWith(".")){
+            if (fileName.contains(".") && !fileName.startsWith(".")) {
                 name = fileName.substring(0, fileName.indexOf("."))
                         + "(" + copyNumber + ")"
                         + fileName.substring(fileName.indexOf("."));
-            }else {
+            } else {
                 name = fileName + "(" + copyNumber + ")";
             }
             path = pathDir.resolve(name);

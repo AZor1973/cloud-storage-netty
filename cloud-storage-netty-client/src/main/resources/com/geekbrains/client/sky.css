@@ -2,28 +2,27 @@
     -fx-font-size: 12pt;
     -fx-background: sky-blue;
     sky-blue: rgb(17, 145, 213);
-    brighter-sky-blue: derive( sky-blue , 50% );
+    brighter-sky-blue: derive(sky-blue, 50%);
     -fx-focus-color: yellow;
 }
 
-.label{
+.label {
     -fx-focus-color: yellow;
-    /*-fx-border-width: 2;*/
-    /*-fx-border-color: yellow;*/
 }
 
-.list-view, .label, .text-field{
+.list-view, .label, .text-field {
     -fx-font: bold italic 12pt "LucidaBrightDemiBold";
 }
 
 .scroll-bar:horizontal .thumb {
     -fx-background-color: brighter-sky-blue;
 }
+
 .scroll-bar:vertical .thumb {
     -fx-background-color: brighter-sky-blue;
 }
 
-.button{
+.button {
     -fx-text-fill: brighter-sky-blue;
     -fx-border-color: rgba(255, 255, 255, .80);
     -fx-border-radius: 8;
@@ -31,7 +30,7 @@
     -fx-font: bold italic 12pt "LucidaBrightDemiBold";
 }
 
-.borders{
+.borders {
     -fx-border-color: rgba(255, 255, 255, .80);
     -fx-border-style: dotted;
     -fx-border-width: 1;
@@ -46,11 +45,11 @@
     -fx-font: bold italic 20pt "LucidaBrightDemiBold";
 }
 
-.combo-box .arrow{
+.combo-box .arrow {
     -fx-background-color: brighter-sky-blue;
 }
 
-.combo-box .list-cell{
+.combo-box .list-cell {
     -fx-text-fill: brighter-sky-blue;
     -fx-font: bold italic 12pt "LucidaBrightDemiBold";
 }
