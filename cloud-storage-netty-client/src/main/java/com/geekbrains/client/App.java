@@ -51,11 +51,11 @@ public class App extends Application {
     private void initAuthWindow() throws IOException {
         authLoader = new FXMLLoader();
         authLoader.setLocation(getClass().getResource(AUTH_FXML));
-        Parent authDialogPanel = authLoader.load();
+        Parent root = authLoader.load();
         authStage = new Stage();
         authStage.initOwner(primaryStage);
         authStage.initModality(Modality.WINDOW_MODAL);
-        authStage.setScene(new Scene(authDialogPanel));
+        authStage.setScene(new Scene(root));
         authStage.getScene().getStylesheets().add("com/geekbrains/client/sky.css");
         authStage.setResizable(false);
         getAuthController().loginFocus();  // фокус на поле логина (для удобства)
@@ -65,11 +65,11 @@ public class App extends Application {
     private void initRegWindow() throws IOException {
         regLoader = new FXMLLoader();
         regLoader.setLocation(getClass().getResource(REG_FXML));
-        Parent regPanel = regLoader.load();
+        Parent root = regLoader.load();
         regStage = new Stage();
         regStage.initOwner(authStage);
         regStage.initModality(Modality.WINDOW_MODAL);
-        regStage.setScene(new Scene(regPanel));
+        regStage.setScene(new Scene(root));
         regStage.getScene().getStylesheets().add("com/geekbrains/client/sky.css");
         regStage.setResizable(false);
         getRegController().nickFocus(); // фокус на поле имени (для удобства)
