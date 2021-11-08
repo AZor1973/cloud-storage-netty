@@ -3,7 +3,6 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.scene.text.*?>
 
 <AnchorPane prefHeight="600" prefWidth="1000" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.MainController">
     <HBox alignment="CENTER" layoutY="-8.0" AnchorPane.bottomAnchor="8.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="-8.0">
@@ -13,11 +12,11 @@
         <VBox alignment="CENTER" HBox.hgrow="ALWAYS">
             <Label fx:id="currentPathLabelServer" VBox.vgrow="ALWAYS" />
             <ListView fx:id="serverListView" onKeyPressed="#handleServerListViewKey" onMouseClicked="#selectFileToDownloadMouse" VBox.vgrow="ALWAYS" />
-            <TextField fx:id="output" editable="false" onAction="#downloadRequest" onKeyPressed="#keyHandleOutput" VBox.vgrow="ALWAYS">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </TextField>
+            <HBox alignment="CENTER" VBox.vgrow="NEVER">
+                <Label fx:id="downloadLabel" onMouseClicked="#cancelDownload" text="Download: " HBox.hgrow="ALWAYS" />
+                <Label fx:id="downloadItem" onKeyPressed="#keyHandleDownloadItem" onMouseClicked="#cancelDownload" HBox.hgrow="ALWAYS" />
+                <Label fx:id="okLabelServer" onMouseClicked="#cancelDownload" text=" OK?" HBox.hgrow="ALWAYS" />
+            </HBox>
         </VBox>
         <VBox HBox.hgrow="ALWAYS">
             <HBox.margin>
@@ -54,11 +53,11 @@
             </HBox.margin>
             <Label fx:id="currentPathLabelClient" VBox.vgrow="ALWAYS" />
             <ListView fx:id="clientListView" onKeyPressed="#selectFileToUploadKey" onMouseClicked="#selectFileToUploadMouse" VBox.vgrow="ALWAYS" />
-            <TextField fx:id="input" editable="false" onAction="#upload" onKeyPressed="#keyHandleInput" VBox.vgrow="ALWAYS">
-                <font>
-                    <Font size="14.0" />
-                </font>
-            </TextField>
+            <HBox alignment="CENTER" VBox.vgrow="NEVER">
+                <Label fx:id="uploadLabel" onMouseClicked="#cancelUpload" text="Upload: " HBox.hgrow="ALWAYS" />
+                <Label fx:id="uploadItem" onKeyPressed="#keyHandleUploadItem" onMouseClicked="#cancelUpload" HBox.hgrow="ALWAYS" />
+                <Label fx:id="okLabelClient" onMouseClicked="#cancelUpload" text=" OK?" HBox.hgrow="ALWAYS" />
+            </HBox>
         </VBox>
     </HBox>
 </AnchorPane>

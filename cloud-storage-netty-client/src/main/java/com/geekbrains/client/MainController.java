@@ -20,10 +20,6 @@ import java.util.stream.Collectors;
 @Slf4j
 public class MainController implements Initializable {
     @FXML
-    public TextField input;
-    @FXML
-    public TextField output;
-    @FXML
     public Button uploadButton;
     @FXML
     public Button downloadButton;
@@ -32,13 +28,25 @@ public class MainController implements Initializable {
     @FXML
     public ListView<FileInfoCommandData> clientListView;
     @FXML
+    public ComboBox<String> disksBox;
+    @FXML
     public Label currentPathLabelClient;
     @FXML
     public Label currentPathLabelServer;
     @FXML
     public Label connectLabel;
     @FXML
-    public ComboBox<String> disksBox;
+    public Label downloadItem;
+    @FXML
+    public Label downloadLabel;
+    @FXML
+    public Label okLabelServer;
+    @FXML
+    public Label uploadItem;
+    @FXML
+    public Label uploadLabel;
+    @FXML
+    public Label okLabelClient;
     private static final int BUFFER_SIZE = 8192;
     private static final String WARN_RESOURCE = "com/geekbrains/client/warn.css";
     private static final String INFO_RESOURCE = "com/geekbrains/client/info.css";
@@ -59,6 +67,13 @@ public class MainController implements Initializable {
 
         currentPath = Path.of(disksBox.getSelectionModel().getSelectedItem());
         updateClientListView(currentPath);
+
+        downloadLabel.setVisible(false);
+        okLabelServer.setVisible(false);
+        uploadLabel.setVisible(false);
+        okLabelClient.setVisible(false);
+        downloadItem.setFocusTraversable(true);
+        uploadItem.setFocusTraversable(true);
 
         ContextMenu clientContextMenu = new ContextMenu();
         ContextMenu serverContextMenu = new ContextMenu();
@@ -181,7 +196,7 @@ public class MainController implements Initializable {
     private void renameFile() {
         if (clientListView.getSelectionModel().getSelectedItem() != null) {
             String file = clientListView.getSelectionModel().getSelectedItem().getName();
-            Path path = Path.of(currentPath.toString(), file);
+            Path path = currentPath.resolve(file);
             String name, extension = "";
             if (file.contains(".") && !file.startsWith(".")) {
                 name = file.substring(0, file.lastIndexOf("."));
@@ -276,10 +291,10 @@ public class MainController implements Initializable {
         }
         String oldName = serverListView.getSelectionModel().getSelectedItem().getName();
         String name, extension = "";
-        if (oldName.contains(".") && !oldName.startsWith(".")){
+        if (oldName.contains(".") && !oldName.startsWith(".")) {
             name = oldName.substring(0, oldName.lastIndexOf("."));
             extension = oldName.substring(oldName.lastIndexOf("."));
-        }else {
+        } else {
             name = oldName;
         }
         String newName = getNewNameFromDialog(name + " will be renamed!", "Rename file", "New name:");
@@ -342,25 +357,29 @@ public class MainController implements Initializable {
             currentPath = path;
             updateClientListView(currentPath);
         } else {
-            input.setText(fileName);
-            input.requestFocus();
+            uploadItem.setText(fileName);
+            uploadLabel.setVisible(true);
+            okLabelClient.setVisible(true);
+            uploadItem.requestFocus();
         }
     }
 
     // Передача файла на сервер
     public void upload() throws IOException {
-        if (!input.getText().isBlank()) {
-            Path path = currentPath.resolve(input.getText());
+        if (!uploadItem.getText().isBlank()) {
+            Path path = currentPath.resolve(uploadItem.getText());
             long selectedFileSize = Files.size(path);
             FileInputStream fis = new FileInputStream(path.toString());
             byte[] buffer = new byte[BUFFER_SIZE];
             int readBytes;
             boolean start = true;
             while ((readBytes = fis.read(buffer)) != -1) {
-                network.sendFile(input.getText(), selectedFileSize, buffer, start, readBytes);
+                network.sendFile(uploadItem.getText(), selectedFileSize, buffer, start, readBytes);
                 start = false;
             }
-            input.clear();
+            uploadItem.setText("");
+            uploadLabel.setVisible(false);
+            okLabelClient.setVisible(false);
             fis.close();
             clientListView.requestFocus();
         }
@@ -393,16 +412,20 @@ public class MainController implements Initializable {
         if (serverListView.getSelectionModel().getSelectedItem().getType().equals(FileInfoCommandData.DIRECTORY)) {
             network.sendFileRequest(fileName);
         } else {
-            output.setText(fileName);
-            output.requestFocus();
+            downloadItem.setText(fileName);
+            downloadLabel.setVisible(true);
+            okLabelServer.setVisible(true);
+            downloadItem.requestFocus();
         }
     }
 
     @FXML
     private void downloadRequest() {
-        if (!output.getText().isBlank()) {
-            network.sendFileRequest(output.getText());
-            output.clear();
+        if (!downloadItem.getText().isBlank()) {
+            network.sendFileRequest(downloadItem.getText());
+            downloadItem.setText("");
+            downloadLabel.setVisible(false);
+            okLabelServer.setVisible(false);
         }
         serverListView.requestFocus();
     }
@@ -451,30 +474,34 @@ public class MainController implements Initializable {
         DialogPane dialogPane = alert.getDialogPane();
         if (type.equals(Alert.AlertType.ERROR)) {
             dialogPane.getStylesheets().add(WARN_RESOURCE);
-        }else {
+        } else {
             dialogPane.getStylesheets().add(INFO_RESOURCE);
         }
         alert.showAndWait();
         return alert.getResult() == ButtonType.OK;
     }
 
-    // Вспомогательный метод текстового поля
-    public void keyHandleInput(KeyEvent keyEvent) {
-        if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
-            input.clear();
+    // Вспомогательный метод для uploadItem
+    public void keyHandleUploadItem(KeyEvent keyEvent) throws IOException {
+        if (keyEvent.getCode() == KeyCode.ENTER) {
+            upload();
+        } else if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
+            uploadItem.setText("");
+            uploadLabel.setVisible(false);
+            okLabelClient.setVisible(false);
             clientListView.requestFocus();
-        } else if (keyEvent.getCode() == KeyCode.LEFT) {
-            output.requestFocus();
         }
     }
 
-    // Вспомогательный метод текстового поля
-    public void keyHandleOutput(KeyEvent keyEvent) {
-        if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
-            output.clear();
+    // Вспомогательный метод для downloadItem
+    public void keyHandleDownloadItem(KeyEvent keyEvent) {
+        if (keyEvent.getCode() == KeyCode.ENTER) {
+            downloadRequest();
+        } else if (keyEvent.getCode() == KeyCode.ESCAPE || keyEvent.getCode() == KeyCode.UP) {
+            downloadItem.setText("");
+            downloadLabel.setVisible(false);
+            okLabelServer.setVisible(false);
             serverListView.requestFocus();
-        } else if (keyEvent.getCode() == KeyCode.RIGHT) {
-            input.requestFocus();
         }
     }
 
@@ -497,6 +524,20 @@ public class MainController implements Initializable {
         if (!name.isBlank()) {
             network.sendChangeUsername(name);
         }
+    }
+
+    public void cancelUpload() {
+        uploadItem.setText("");
+        uploadLabel.setVisible(false);
+        okLabelClient.setVisible(false);
+        clientListView.requestFocus();
+    }
+
+    public void cancelDownload() {
+        downloadItem.setText("");
+        downloadLabel.setVisible(false);
+        okLabelServer.setVisible(false);
+        serverListView.requestFocus();
     }
 }
 

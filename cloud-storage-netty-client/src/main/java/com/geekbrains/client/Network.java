@@ -100,7 +100,6 @@ public class Network {
             log.debug("Auth OK: " + data.getUsername());
             Platform.runLater(() -> App.INSTANCE.switchToMainWindow(data.getUsername()));
         } else if (command.getType() == CommandType.UPDATE_FILE_LIST) {
-            System.out.println("received");
             UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
             Platform.runLater(() -> App.INSTANCE.getMainController().updateServerListView(data.getFiles()));
         } else if (command.getType() == CommandType.FILE_INFO) {

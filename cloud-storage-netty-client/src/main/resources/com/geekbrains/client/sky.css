@@ -3,6 +3,13 @@
     -fx-background: sky-blue;
     sky-blue: rgb(17, 145, 213);
     brighter-sky-blue: derive( sky-blue , 50% );
+    -fx-focus-color: yellow;
+}
+
+.label{
+    -fx-focus-color: yellow;
+    /*-fx-border-width: 2;*/
+    /*-fx-border-color: yellow;*/
 }
 
 .list-view, .label, .text-field{
