@@ -23,9 +23,8 @@ public class Network {
     private static Network INSTANCE;
     private final String host;
     private final int port;
-    private String login;
-    private char[] password;
     private SocketChannel socketChannel;
+    private boolean isConnect;
 
     public static Network getInstance() {
         if (INSTANCE == null) {
@@ -65,7 +64,14 @@ public class Network {
 
                                             @Override
                                             public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
-                                                Platform.runLater(() -> App.INSTANCE.getMainController().connectLost());
+                                                Platform.runLater(() -> {
+                                                    try {
+                                                        App.INSTANCE.getMainController().connectLost();
+                                                    } catch (IOException | InterruptedException e) {
+                                                        e.printStackTrace();
+                                                    }
+                                                });
+                                                isConnect = false;
                                             }
                                         }
                                 );
@@ -73,8 +79,10 @@ public class Network {
                         });
                 ChannelFuture future = bootstrap.connect(host, port).sync();
                 log.debug("connect");
+                isConnect = true;
                 future.channel().closeFuture().sync();
             } catch (Exception e) {
+                isConnect = false;
                 log.debug("Network error");
                 e.printStackTrace();
                 Platform.runLater(() -> App.INSTANCE.getMainController().showAlert("Network error", Alert.AlertType.ERROR));
@@ -84,7 +92,6 @@ public class Network {
         });
         thread.setDaemon(true);
         thread.start();
-        Platform.runLater(() -> App.INSTANCE.getMainController().connectLabel.setText("SERVER: ON"));
     }
 
     public void readCommand(Command command) {
@@ -101,6 +108,7 @@ public class Network {
             log.debug("Auth OK: " + data.getUsername());
             String username = data.getUsername();
             Platform.runLater(() -> App.INSTANCE.switchToMainWindow(username));
+            Platform.runLater(() -> App.INSTANCE.getMainController().connectLabel.setText("SERVER: ON"));
             Platform.runLater(() -> App.INSTANCE.getMainController().showAlert("You are signed in as " + username, Alert.AlertType.INFORMATION));
         } else if (command.getType() == CommandType.UPDATE_FILE_LIST) {
             UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
@@ -134,14 +142,10 @@ public class Network {
     }
 
     public void sendAuthMessage(String login, char[] password) {
-        this.login = login;
-        this.password = password;
         sendCommand(Command.authCommand(login, password));
     }
 
     public void sendRegMessage(String username, String login, char[] password) {
-        this.login = login;
-        this.password = password;
         sendCommand(Command.regCommand(username, login, password));
     }
 
@@ -169,22 +173,11 @@ public class Network {
         sendCommand(Command.changeUsernameCommand(newName));
     }
 
-    public void reAuth() {
-        connect();
-        // Похожая ситуация с вышеизложенной. Очевидно сервер не успевает наладить подключение
-        // и сообщение об авторизации пролетает мимо.
-        try {
-            Thread.sleep(100);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-        if (login != null && password != null) {
-            log.debug("ReAuth");
-            sendAuthMessage(login, password);
-        }
-    }
-
     public void close() {
         socketChannel.close();
+    }
+
+    public boolean isConnect() {
+        return isConnect;
     }
 }

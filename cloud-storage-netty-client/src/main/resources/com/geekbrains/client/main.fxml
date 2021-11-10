@@ -29,7 +29,7 @@
             <opaqueInsets>
                 <Insets/>
             </opaqueInsets>
-            <Label fx:id="connectLabel" onMouseClicked="#labelReconnect" text="SERVER: OFF"/>
+            <Label fx:id="connectLabel" onMouseClicked="#labelReconnect" text="SERVER: OFF. Reconnect?"/>
             <VBox alignment="TOP_RIGHT" prefHeight="200.0" prefWidth="100.0">
                 <ComboBox fx:id="disksBox" onAction="#selectDiskAction" prefWidth="150.0">
                     <VBox.margin>

@@ -30,7 +30,6 @@ public class DatabaseService {
 
     public String getUsernameByLoginAndPassword(String login, char[] password) {
         String username = null;
-        System.out.println(Arrays.toString(password));
         try {
             getUsernameStatement.setString(1, login);
             getUsernameStatement.setString(2, new String(password));

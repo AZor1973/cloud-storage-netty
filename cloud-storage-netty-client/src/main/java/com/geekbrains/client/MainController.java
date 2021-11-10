@@ -50,6 +50,7 @@ public class MainController implements Initializable {
     private static final int BUFFER_SIZE = 8192;
     private static final String WARN_RESOURCE = "com/geekbrains/client/warn.css";
     private static final String INFO_RESOURCE = "com/geekbrains/client/info.css";
+    private static final String RECONNECT = "SERVER: OFF. Reconnect?";
     private Network network;
     private Path currentPath;
     private int copyNumber = 0;  // Если файл существует - делаем копию, а не удаляем (с учётом загрузки частями).
@@ -505,17 +506,27 @@ public class MainController implements Initializable {
         }
     }
 
-    public void connectLost() {
-        connectLabel.setText("SERVER: OFF. Reconnect?");
+    public void connectLost() throws IOException, InterruptedException {
+        connectLabel.setText(RECONNECT);
         log.warn("Connection lost");
         if (showAlert("Connection lost. Reconnect?", Alert.AlertType.CONFIRMATION)) {
-            network.reAuth();
+            network.connect();
+            Thread.sleep(1000);
+            if (network.isConnect()) {
+                App.INSTANCE.initAuthWindow();
+                App.INSTANCE.getAuthStage().show();
+            }
         }
     }
 
-    public void labelReconnect(MouseEvent mouseEvent) {
-        if (mouseEvent.getClickCount() == 2) {
-            network.reAuth();
+    public void labelReconnect(MouseEvent mouseEvent) throws IOException, InterruptedException {
+        if (mouseEvent.getClickCount() == 2 && connectLabel.getText().equals(RECONNECT)) {
+            network.connect();
+            Thread.sleep(1000);
+            if (network.isConnect()) {
+                App.INSTANCE.initAuthWindow();
+                App.INSTANCE.getAuthStage().show();
+            }
         }
     }
 

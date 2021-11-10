@@ -48,7 +48,7 @@ public class App extends Application {
         primaryStage.setOnCloseRequest(we -> Network.getInstance().close());
     }
 
-    private void initAuthWindow() throws IOException {
+    void initAuthWindow() throws IOException {
         authLoader = new FXMLLoader();
         authLoader.setLocation(getClass().getResource(AUTH_FXML));
         Parent root = authLoader.load();
@@ -92,6 +92,10 @@ public class App extends Application {
 
     public RegController getRegController() {
         return regLoader.getController();
+    }
+
+    public Stage getAuthStage() {
+        return authStage;
     }
 
     public Stage getRegStage() {
