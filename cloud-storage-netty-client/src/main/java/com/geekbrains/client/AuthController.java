@@ -20,18 +20,22 @@ public class AuthController {
         String login = loginField.getText();
         char[] password = passwordField.getText().toCharArray();
         if (login == null || login.isBlank() || password.length == 0) {
-            showAlert("Fields must be filled");
+            showAlert("Fields must be filled", Alert.AlertType.ERROR);
             return;
         }
-        Network.getInstance().sendAuthMessage(login, password);
+        if (Network.getInstance().isConnect()){
+            Network.getInstance().sendAuthMessage(login, password);
+        }else {
+            showAlert("Network error", Alert.AlertType.ERROR);
+        }
     }
 
     public void registration() {
         App.INSTANCE.getRegStage().show();
     }
 
-    public void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+    public void showAlert(String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
         alert.setContentText(message);
         DialogPane dialogPane = alert.getDialogPane();
         dialogPane.getStylesheets().add(WARN_RESOURCE);
