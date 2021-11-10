@@ -24,7 +24,7 @@ public class Network {
     private final String host;
     private final int port;
     private String login;
-    private String password;
+    private char[] password;
     private SocketChannel socketChannel;
 
     public static Network getInstance() {
@@ -133,13 +133,13 @@ public class Network {
         }
     }
 
-    public void sendAuthMessage(String login, String password) {
+    public void sendAuthMessage(String login, char[] password) {
         this.login = login;
         this.password = password;
         sendCommand(Command.authCommand(login, password));
     }
 
-    public void sendRegMessage(String username, String login, String password) {
+    public void sendRegMessage(String username, String login, char[] password) {
         this.login = login;
         this.password = password;
         sendCommand(Command.regCommand(username, login, password));

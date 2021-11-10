@@ -12,5 +12,5 @@ public class AuthCommandData implements Serializable {
     @Serial
     private static final long serialVersionUID = 5990269751251616948L;
     private final String login;
-    private final String password;
+    private final char[] password;
 }

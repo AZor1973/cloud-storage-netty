@@ -13,12 +13,13 @@ public class AuthController {
     private TextField loginField;
     @FXML
     private PasswordField passwordField;
+    private static final String WARN_RESOURCE = "com/geekbrains/client/warn.css";
 
     @FXML
     public void executeAuth() {
         String login = loginField.getText();
-        String password = passwordField.getText();
-        if (login == null || login.isBlank() || password == null || password.isBlank()) {
+        char[] password = passwordField.getText().toCharArray();
+        if (login == null || login.isBlank() || password.length == 0) {
             showAlert("Fields must be filled");
             return;
         }
@@ -33,7 +34,7 @@ public class AuthController {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setContentText(message);
         DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add("com/geekbrains/client/warn.css");
+        dialogPane.getStylesheets().add(WARN_RESOURCE);
         alert.showAndWait();
     }
 

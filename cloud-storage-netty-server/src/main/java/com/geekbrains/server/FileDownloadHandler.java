@@ -57,7 +57,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     private void registrationNewUser(ChannelHandlerContext ctx, Command msg) throws IOException {
         RegCommandData data = (RegCommandData) msg.getData();
         String login = data.getLogin();
-        String password = data.getPassword();
+        char[] password = data.getPassword();
         String username = data.getUsername();
         if (!ds.addNewUser(username, login, password)) {
             ctx.writeAndFlush(Command.errorCommand("This user is already registered!"));
@@ -79,7 +79,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     private void authentication(ChannelHandlerContext ctx, Command msg) throws IOException {
         AuthCommandData data = (AuthCommandData) msg.getData();
         String login = data.getLogin();
-        String password = data.getPassword();
+        char[] password = data.getPassword();
         String username = ds.getUsernameByLoginAndPassword(login, password);
         if (username == null) {
             ctx.writeAndFlush(Command.errorCommand("Incorrect login or password!"));

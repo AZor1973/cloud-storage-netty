@@ -3,6 +3,7 @@ package com.geekbrains.server;
 import lombok.extern.slf4j.Slf4j;
 
 import java.sql.*;
+import java.util.Arrays;
 
 @Slf4j
 public class DatabaseService {
@@ -27,11 +28,12 @@ public class DatabaseService {
         }
     }
 
-    public String getUsernameByLoginAndPassword(String login, String password) {
+    public String getUsernameByLoginAndPassword(String login, char[] password) {
         String username = null;
+        System.out.println(Arrays.toString(password));
         try {
             getUsernameStatement.setString(1, login);
-            getUsernameStatement.setString(2, password);
+            getUsernameStatement.setString(2, new String(password));
             ResultSet resultSet = getUsernameStatement.executeQuery();
             while (resultSet.next()) {
                 username = resultSet.getString("user");
@@ -53,10 +55,10 @@ public class DatabaseService {
         return false;
     }
 
-    public boolean addNewUser(String username, String login, String password) {
+    public boolean addNewUser(String username, String login, char[] password) {
         try {
             addNewUserStatement.setString(1, login);
-            addNewUserStatement.setString(2, password);
+            addNewUserStatement.setString(2, new String(password));
             addNewUserStatement.setString(3, username);
             return addNewUserStatement.executeUpdate() > 0;
         } catch (SQLException e) {

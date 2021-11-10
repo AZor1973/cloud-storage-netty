@@ -17,9 +17,9 @@ public class RegController {
 
     public void submitRegistration() {
         String login = loginFieldReg.getText();
-        String password = passwordFieldReg.getText();
+        char[] password = passwordFieldReg.getText().toCharArray();
         String username = nickField.getText();
-        if (login == null || login.isBlank() || password == null || password.isBlank()) {
+        if (login == null || login.isBlank() || password.length == 0) {
             showAlert("Fields must be filled");
             return;
         }
