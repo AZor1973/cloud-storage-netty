@@ -13,33 +13,24 @@ public class AuthController {
     private TextField loginField;
     @FXML
     private PasswordField passwordField;
-    private static final String WARN_RESOURCE = "com/geekbrains/client/warn.css";
 
     @FXML
     public void executeAuth() {
         String login = loginField.getText();
         char[] password = passwordField.getText().toCharArray();
         if (login == null || login.isBlank() || password.length == 0) {
-            showAlert("Fields must be filled", Alert.AlertType.ERROR);
+            App.INSTANCE.getMainController().showAlert("Fields must be filled", Alert.AlertType.ERROR);
             return;
         }
-        if (Network.getInstance().isConnect()){
+        if (Network.getInstance().isConnect()) {
             Network.getInstance().sendAuthMessage(login, password);
-        }else {
-            showAlert("Network error", Alert.AlertType.ERROR);
+        } else {
+            App.INSTANCE.getMainController().showAlert("Network error", Alert.AlertType.ERROR);
         }
     }
 
     public void registration() {
         App.INSTANCE.getRegStage().show();
-    }
-
-    public void showAlert(String message, Alert.AlertType type) {
-        Alert alert = new Alert(type);
-        alert.setContentText(message);
-        DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add(WARN_RESOURCE);
-        alert.showAndWait();
     }
 
     // Вспомогательные методы для удобства навигации между полями

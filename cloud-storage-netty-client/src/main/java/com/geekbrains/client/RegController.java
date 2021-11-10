@@ -20,19 +20,11 @@ public class RegController {
         char[] password = passwordFieldReg.getText().toCharArray();
         String username = nickField.getText();
         if (login == null || login.isBlank() || password.length == 0) {
-            showAlert("Fields must be filled");
+            App.INSTANCE.getMainController().showAlert("Fields must be filled", Alert.AlertType.ERROR);
             return;
         }
         Network.getInstance().sendRegMessage(username, login, password);
         App.INSTANCE.getRegStage().close();
-    }
-
-    public void showAlert(String message) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setContentText(message);
-        DialogPane dialogPane = alert.getDialogPane();
-        dialogPane.getStylesheets().add("com/geekbrains/client/warn.css");
-        alert.showAndWait();
     }
 
     // Вспомогательные методы для удобства навигации между полями
