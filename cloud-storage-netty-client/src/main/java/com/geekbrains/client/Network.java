@@ -12,19 +12,24 @@ import io.netty.handler.codec.serialization.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 @Slf4j
 public class Network {
 
     private static final int SERVER_PORT = 8189;
     private static final String SERVER_HOST = "localhost";
+    public static final String REMEMBERED_DIR = "remembered";
     private static Network INSTANCE;
     private final String host;
     private final int port;
     private SocketChannel socketChannel;
-    private boolean isConnect;
+    private volatile boolean isConnect;
 
     public static Network getInstance() {
         if (INSTANCE == null) {
@@ -107,6 +112,34 @@ public class Network {
             AuthOkCommandData data = (AuthOkCommandData) command.getData();
             log.debug("Auth OK: " + data.getUsername());
             String username = data.getUsername();
+            // Если стоит галочка запомнить - создаём файл с именем юзера
+            Path path = Path.of(App.INSTANCE.getMainController().getStartPath().toString(), REMEMBERED_DIR);
+            if (App.INSTANCE.getAuthController().rememberMe.isSelected() || Files.exists(path)) {
+                try {
+                    if (!Files.exists(path)) {
+                        Files.createDirectory(path);
+                        Files.createFile(path.resolve(username));
+                        log.debug(username + " file created");
+                    } else {
+                        Optional<Path> optionalPath = Files.list(path).findAny();
+                        if (optionalPath.isPresent()) {
+                            Path filePath = optionalPath.get();
+                            Files.move(filePath, filePath.resolveSibling(username));
+                            log.debug(filePath.getFileName().toString() + " changed name to " + username);
+                        }
+                    }
+                } catch (IOException e) {
+                    if (Files.exists(path)) {
+                        try {
+                            FileUtils.forceDelete(path.toFile());
+                        } catch (IOException ex) {
+                            ex.printStackTrace();
+                        }
+                    }
+                    e.printStackTrace();
+                    log.error("didn't create ");
+                }
+            }
             Platform.runLater(() -> App.INSTANCE.switchToMainWindow(username));
             Platform.runLater(() -> App.INSTANCE.getMainController().connectLabel.setText("SERVER: ON"));
             Platform.runLater(() -> App.INSTANCE.getMainController().showAlert("You are signed in as " + username, Alert.AlertType.INFORMATION));
@@ -126,6 +159,14 @@ public class Network {
     }
 
     private void sendCommand(Command command) {
+        long start = System.currentTimeMillis();
+        while (!isConnect) {
+            Thread.onSpinWait();
+            if ((System.currentTimeMillis() - start) > 3000) {
+                Platform.runLater(() -> App.INSTANCE.getMainController().showAlert("Command transmission error", Alert.AlertType.ERROR));
+                return;
+            }
+        }
         socketChannel.writeAndFlush(command);
     }
 
@@ -141,12 +182,12 @@ public class Network {
         }
     }
 
-    public void sendAuthMessage(String login, char[] password) {
-        sendCommand(Command.authCommand(login, password));
+    public void sendAuthMessage(String login, char[] password, boolean isRemember, String username) {
+        sendCommand(Command.authCommand(login, password, isRemember, username));
     }
 
-    public void sendRegMessage(String username, String login, char[] password) {
-        sendCommand(Command.regCommand(username, login, password));
+    public void sendRegMessage(String username, String login, char[] password, boolean isRemember) {
+        sendCommand(Command.regCommand(username, login, password, isRemember));
     }
 
     public void sendFileRequest(String fileNameToDownload) {

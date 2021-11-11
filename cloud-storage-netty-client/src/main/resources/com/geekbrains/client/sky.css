@@ -6,8 +6,20 @@
     -fx-focus-color: yellow;
 }
 
-.label {
-    -fx-focus-color: yellow;
+.menu-bar{
+    -fx-background-color: sky-blue;
+}
+
+.menu-bar .label{
+    -fx-text-fill: white;
+}
+
+.menu-item .label{
+    -fx-text-fill: sky-blue;
+}
+
+.menu-item:focused .label{
+    -fx-text-fill: white;
 }
 
 .list-view, .label, .text-field {
@@ -56,4 +68,8 @@
 
 .combo-box-popup .list-view .list-cell:filled:hover {
     -fx-text-fill: white;
+}
+
+.check-box{
+    -fx-font: bold italic 12pt "LucidaBrightDemiBold";
 }

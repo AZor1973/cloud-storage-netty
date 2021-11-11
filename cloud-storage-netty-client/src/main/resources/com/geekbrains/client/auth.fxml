@@ -20,6 +20,9 @@
                <Insets left="10.0" />
             </HBox.margin></PasswordField>
         </HBox>
+        <HBox alignment="CENTER" VBox.vgrow="NEVER">
+            <CheckBox fx:id="rememberMe" mnemonicParsing="false" text="Remember me"/>
+        </HBox>
         <HBox alignment="CENTER" focusTraversable="true" VBox.vgrow="ALWAYS">
             <Button fx:id="authButton" mnemonicParsing="false" onAction="#executeAuth" onKeyPressed="#goFromEnter" text="Войти!" />
             <Button fx:id="regButton" mnemonicParsing="false" onAction="#registration" onKeyPressed="#goFromReg" text="Регистрация">

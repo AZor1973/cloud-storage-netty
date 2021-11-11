@@ -1,11 +1,15 @@
 package com.geekbrains.client;
 
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
-public class RegController {
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class RegController implements Initializable {
     @FXML
     public Button submitRegButton;
     @FXML
@@ -14,6 +18,16 @@ public class RegController {
     public PasswordField passwordFieldReg;
     @FXML
     public TextField nickField;
+    @FXML
+    public CheckBox rememberMeReg;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        rememberMeReg.setOnAction(event -> {
+            App.INSTANCE.getAuthController().rememberMe.setSelected(rememberMeReg.isSelected());
+            App.INSTANCE.getMainController().rememberMeMenuItem.setSelected(rememberMeReg.isSelected());
+        });
+    }
 
     public void submitRegistration() {
         String login = loginFieldReg.getText();
@@ -23,7 +37,7 @@ public class RegController {
             App.INSTANCE.getMainController().showAlert("Fields must be filled", Alert.AlertType.ERROR);
             return;
         }
-        Network.getInstance().sendRegMessage(username, login, password);
+        Network.getInstance().sendRegMessage(username, login, password, rememberMeReg.isSelected());
         App.INSTANCE.getRegStage().close();
     }
 

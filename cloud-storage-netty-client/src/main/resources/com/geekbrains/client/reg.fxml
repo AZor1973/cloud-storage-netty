@@ -5,37 +5,36 @@
 <?import javafx.scene.layout.*?>
 
 <AnchorPane prefHeight="240.0" prefWidth="360.0" xmlns="http://javafx.com/javafx/11.0.2" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.geekbrains.client.RegController">
-    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0"
-          AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+    <VBox alignment="CENTER" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-            <Label prefWidth="70.0" text="Имя:"/>
+            <Label prefWidth="70.0" text="Имя:" />
             <TextField fx:id="nickField" onAction="#submitNick" onKeyPressed="#goFromNick" promptText="Input nick">
                 <HBox.margin>
-                    <Insets left="10.0"/>
+                    <Insets left="10.0" />
                 </HBox.margin>
             </TextField>
         </HBox>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-            <Label prefWidth="70.0" text="Логин:"/>
-            <TextField fx:id="loginFieldReg" onAction="#submitLoginReg" onKeyPressed="#goFromLogin"
-                       promptText="Input login">
+            <Label prefWidth="70.0" text="Логин:" />
+            <TextField fx:id="loginFieldReg" onAction="#submitLoginReg" onKeyPressed="#goFromLogin" promptText="Input login">
                 <HBox.margin>
-                    <Insets left="10.0"/>
+                    <Insets left="10.0" />
                 </HBox.margin>
             </TextField>
         </HBox>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-            <Label prefWidth="70.0" text="Пароль:"/>
-            <PasswordField fx:id="passwordFieldReg" onAction="#submitRegistration" onKeyPressed="#goFromPassword"
-                           promptText="Input password">
+            <Label prefWidth="70.0" text="Пароль:" />
+            <PasswordField fx:id="passwordFieldReg" onAction="#submitRegistration" onKeyPressed="#goFromPassword" promptText="Input password">
                 <HBox.margin>
-                    <Insets left="10.0"/>
+                    <Insets left="10.0" />
                 </HBox.margin>
             </PasswordField>
         </HBox>
+        <HBox alignment="CENTER" VBox.vgrow="NEVER">
+            <CheckBox fx:id="rememberMeReg" mnemonicParsing="false" text="Remember me"/>
+        </HBox>
         <HBox alignment="CENTER" prefHeight="100.0" prefWidth="200.0">
-            <Button fx:id="submitRegButton" mnemonicParsing="false" onAction="#submitRegistration"
-                    text="Регистрация"/>
+            <Button fx:id="submitRegButton" mnemonicParsing="false" onAction="#submitRegistration" text="Регистрация" />
         </HBox>
     </VBox>
 </AnchorPane>

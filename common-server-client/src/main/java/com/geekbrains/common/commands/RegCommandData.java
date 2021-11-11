@@ -14,4 +14,5 @@ public class RegCommandData implements Serializable {
     private final String username;
     private final String login;
     private final char[] password;
+    private final boolean isRemember;
 }

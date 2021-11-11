@@ -1,18 +1,29 @@
 package com.geekbrains.client;
 
 import javafx.fxml.FXML;
+import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 
-public class AuthController {
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class AuthController implements Initializable {
     @FXML
     public Button authButton;
     @FXML
     public Button regButton;
     @FXML
+    public CheckBox rememberMe;
+    @FXML
     private TextField loginField;
     @FXML
     private PasswordField passwordField;
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        rememberMe.setOnAction(event -> App.INSTANCE.getMainController().rememberMeMenuItem.setSelected(rememberMe.isSelected()));
+    }
 
     @FXML
     public void executeAuth() {
@@ -23,7 +34,7 @@ public class AuthController {
             return;
         }
         if (Network.getInstance().isConnect()) {
-            Network.getInstance().sendAuthMessage(login, password);
+            Network.getInstance().sendAuthMessage(login, password, rememberMe.isSelected(), null);
         } else {
             App.INSTANCE.getMainController().showAlert("Network error", Alert.AlertType.ERROR);
         }
@@ -32,8 +43,8 @@ public class AuthController {
     public void registration() {
         App.INSTANCE.getRegStage().show();
     }
-
     // Вспомогательные методы для удобства навигации между полями
+
     public void loginFocus() {
         loginField.requestFocus();
     }

@@ -1,6 +1,7 @@
 package com.geekbrains.client;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -8,6 +9,9 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Optional;
 
 public class App extends Application {
     public static App INSTANCE;
@@ -30,13 +34,12 @@ public class App extends Application {
     public void start(Stage primaryStage) throws IOException {
         this.primaryStage = primaryStage;
         initViews();
-        authStage.show();
     }
 
     private void initViews() throws IOException {
         initMainWindow();
-        initAuthWindow();
         initRegWindow();
+        initAuthWindow();
     }
 
     private void initMainWindow() throws IOException {
@@ -60,6 +63,19 @@ public class App extends Application {
         authStage.setResizable(false);
         getAuthController().loginFocus();  // фокус на поле логина (для удобства)
         authStage.setOnCloseRequest(we -> Network.getInstance().close());
+        // Если реализована автоаутентификация - подключаемся с сохранённым именем
+        // имя юзера = имя файла
+        // Иначе проходим аутентификацию
+        Path path = getMainController().getStartPath().resolve(Network.REMEMBERED_DIR);
+        if (Files.exists(path)) {
+            Optional<Path> optionalPath = Files.list(path).findAny();
+            if (optionalPath.isPresent()) {
+                String username = optionalPath.get().getFileName().toString();
+                Platform.runLater(() -> Network.getInstance().sendAuthMessage(null, null, false, username));
+            }
+        } else {
+            authStage.show();
+        }
     }
 
     private void initRegWindow() throws IOException {
@@ -75,30 +91,27 @@ public class App extends Application {
         getRegController().nickFocus(); // фокус на поле имени (для удобства)
     }
 
-    public void switchToMainWindow(String username) {
+    void switchToMainWindow(String username) {
         primaryStage.show();
         primaryStage.setTitle(username);
+        getMainController().setUsername(username);
         authStage.close();
     }
 
     // для доступа к контроллеру из класса Network
-    public MainController getMainController() {
+    MainController getMainController() {
         return mainLoader.getController();
     }
 
-    private AuthController getAuthController() {
+    AuthController getAuthController() {
         return authLoader.getController();
     }
 
-    public RegController getRegController() {
+    RegController getRegController() {
         return regLoader.getController();
     }
 
-    public Stage getAuthStage() {
-        return authStage;
-    }
-
-    public Stage getRegStage() {
+    Stage getRegStage() {
         return regStage;
     }
 

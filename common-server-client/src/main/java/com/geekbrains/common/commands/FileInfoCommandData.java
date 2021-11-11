@@ -15,6 +15,7 @@ public class FileInfoCommandData implements Serializable {
     public static final String DIRECTORY = "Directory";
     private Path path;
     private final String name;
+    private String pathName;
     private final long size;
     private String type;
     private byte[] bytes;
@@ -38,6 +39,7 @@ public class FileInfoCommandData implements Serializable {
 
     public FileInfoCommandData(Path path, long size) {
         name = path.getFileName().toString();
+        pathName = path.toString();
         this.size = size;
         type = getFileType(path);
     }

@@ -64,6 +64,10 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         } else if (Server.isUsernameBusy(username)) {
             ctx.writeAndFlush(Command.errorCommand("This user is already signed in!"));
         } else {
+            if (data.isRemember()) {
+                // Запоминаем юзера в БД если была поставлена соотв. галочка
+                ds.rememberUser(username);
+            }
             this.username = username;
             log.debug(username + " registered");
             Server.addClient(username);
@@ -78,14 +82,29 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
 
     private void authentication(ChannelHandlerContext ctx, Command msg) throws IOException {
         AuthCommandData data = (AuthCommandData) msg.getData();
-        String login = data.getLogin();
-        char[] password = data.getPassword();
-        String username = ds.getUsernameByLoginAndPassword(login, password);
+        String username;
+        // Получаем имя юзера либо по сохранённому имени, либо по данным аутентификации
+        if (data.getUsername() != null && ds.checkRememberedUser(data.getUsername())) {
+            username = data.getUsername();
+        } else {
+            String login = data.getLogin();
+            char[] password = data.getPassword();
+            username = ds.getUsernameByLoginAndPassword(login, password);
+            if (!data.isRemember() && ds.checkRememberedUser(username)) {
+                // "Забываем" юзера, если проходит аутентификация по сохранённому юзеру
+                // и галочка не поставлена
+                ds.forgetUser(username);
+            }
+        }
         if (username == null) {
             ctx.writeAndFlush(Command.errorCommand("Incorrect login or password!"));
         } else if (Server.isUsernameBusy(username)) {
             ctx.writeAndFlush(Command.errorCommand("This user is already signed in!"));
         } else {
+            if (data.isRemember()) {
+                // Запоминаем юзера в БД если была поставлена соотв. галочка
+                ds.rememberUser(username);
+            }
             this.username = username;
             Server.addClient(username);
             pathDir = Server.getRoot().resolve(username);

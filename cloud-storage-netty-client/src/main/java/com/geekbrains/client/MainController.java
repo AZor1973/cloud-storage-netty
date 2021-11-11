@@ -47,12 +47,16 @@ public class MainController implements Initializable {
     public Label uploadLabel;
     @FXML
     public Label okLabelClient;
+    @FXML
+    public CheckMenuItem rememberMeMenuItem;
     private static final int BUFFER_SIZE = 8192;
     private static final String WARN_RESOURCE = "com/geekbrains/client/warn.css";
     private static final String INFO_RESOURCE = "com/geekbrains/client/info.css";
-    private static final String RECONNECT = "SERVER: OFF. Reconnect?";
+    private static final String RECONNECT_STRING = "SERVER: OFF. Reconnect?";
     private Network network;
     private Path currentPath;
+    private Path startPath;
+    private String username;
     private int copyNumber = 0;  // Если файл существует - делаем копию, а не удаляем (с учётом загрузки частями).
 
     @Override
@@ -66,8 +70,42 @@ public class MainController implements Initializable {
         }
         disksBox.getSelectionModel().select(0);
 
-        currentPath = Path.of(disksBox.getSelectionModel().getSelectedItem());
+        startPath = Path.of(disksBox.getSelectionModel().getSelectedItem());
+        currentPath = startPath;
         updateClientListView(currentPath);
+// Ставим галочку, если реализована автоаутентификация
+        if (Files.exists(startPath.resolve(Network.REMEMBERED_DIR))) {
+            rememberMeMenuItem.setSelected(true);
+        }
+        // Удаляем запомненное имя при снятии галочки
+        rememberMeMenuItem.setOnAction(event -> {
+            if (!rememberMeMenuItem.isSelected() && Files.exists(startPath.resolve(Network.REMEMBERED_DIR))) {
+                try {
+                    FileUtils.forceDelete(startPath.resolve(Network.REMEMBERED_DIR).toFile());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            // Если стоит галочка запомнить - создаём файл с именем юзера
+            if (rememberMeMenuItem.isSelected() && !Files.exists(startPath.resolve(Network.REMEMBERED_DIR))) {
+                Path path = Path.of(startPath.toString(), Network.REMEMBERED_DIR);
+                try {
+                    Files.createDirectory(path);
+                    Files.createFile(path.resolve(username));
+                    log.debug(username + " file created");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    log.error("didn't create ");
+                    try {
+                        if (Files.exists(path))
+                            FileUtils.forceDelete(path.toFile());
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
+                }
+                System.out.println();
+            }
+        });
 
         downloadLabel.setVisible(false);
         okLabelServer.setVisible(false);
@@ -325,7 +363,7 @@ public class MainController implements Initializable {
     }
 
     public void updateServerListView(List<FileInfoCommandData> files) {
-        currentPathLabelServer.setText(files.get(0).getName());
+        currentPathLabelServer.setText(files.get(0).getPathName().substring(5));
         files.remove(0);
         serverListView.getItems().clear();
         serverListView.getItems().addAll(files);
@@ -507,26 +545,31 @@ public class MainController implements Initializable {
     }
 
     public void connectLost() throws IOException, InterruptedException {
-        connectLabel.setText(RECONNECT);
+        connectLabel.setText(RECONNECT_STRING);
         log.warn("Connection lost");
         if (showAlert("Connection lost. Reconnect?", Alert.AlertType.CONFIRMATION)) {
-            network.connect();
-            Thread.sleep(1000);
-            if (network.isConnect()) {
-                App.INSTANCE.initAuthWindow();
-                App.INSTANCE.getAuthStage().show();
-            }
+            reconnect();
         }
     }
 
-    public void labelReconnect(MouseEvent mouseEvent) throws IOException, InterruptedException {
-        if (mouseEvent.getClickCount() == 2 && connectLabel.getText().equals(RECONNECT)) {
-            network.connect();
-            Thread.sleep(1000);
-            if (network.isConnect()) {
-                App.INSTANCE.initAuthWindow();
-                App.INSTANCE.getAuthStage().show();
+    public void labelReconnect(MouseEvent mouseEvent) throws IOException {
+        if (mouseEvent.getClickCount() == 2 && connectLabel.getText().equals(RECONNECT_STRING)) {
+            reconnect();
+        }
+    }
+
+    // Переподключаемся к серверу, если соединение прервано
+    private void reconnect() throws IOException {
+        network.connect();
+        long start = System.currentTimeMillis();
+        while (!network.isConnect()) {
+            Thread.onSpinWait();
+            if ((System.currentTimeMillis() - start) > 3000) {
+                return;
             }
+        }
+        if (network.isConnect()) {
+            App.INSTANCE.initAuthWindow();
         }
     }
 
@@ -549,6 +592,14 @@ public class MainController implements Initializable {
         downloadLabel.setVisible(false);
         okLabelServer.setVisible(false);
         serverListView.requestFocus();
+    }
+
+    public Path getStartPath() {
+        return startPath;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
     }
 }
 
