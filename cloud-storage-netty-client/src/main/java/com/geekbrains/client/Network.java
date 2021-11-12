@@ -128,9 +128,11 @@ public class Network {
                 char[] pass = App.INSTANCE.getAuthController().getPasswordField().getText().toCharArray();
                 App.INSTANCE.getMainController().getDs().addNewUser(username, login, pass);
             }
-            Platform.runLater(() -> App.INSTANCE.switchToMainWindow(username));
-            Platform.runLater(() -> App.INSTANCE.getMainController().connectLabel.setText("SERVER: ON"));
-            Platform.runLater(() -> App.INSTANCE.getMainController().showAlert("You are signed in as " + username, Alert.AlertType.INFORMATION));
+            Platform.runLater(() -> {
+                App.INSTANCE.switchToMainWindow(username);
+                App.INSTANCE.getMainController().connectLabel.setText("SERVER: ON");
+                App.INSTANCE.getMainController().showAlert("You are signed in as " + username, Alert.AlertType.INFORMATION);
+            });
         } else if (command.getType() == CommandType.UPDATE_FILE_LIST) {
             UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
             Platform.runLater(() -> App.INSTANCE.getMainController().updateServerListView(data.getFiles()));
@@ -143,6 +145,9 @@ public class Network {
                     e.printStackTrace();
                 }
             });
+        }else if (command.getType() == CommandType.AUTH){
+            AuthCommandData data = (AuthCommandData) command.getData();
+            Platform.runLater(() -> App.INSTANCE.getMainController().addNewUser(data.getLogin(), data.getPassword()));
         }
     }
 
@@ -200,6 +205,10 @@ public class Network {
 
     public void sendChangeUsername(String newName) {
         sendCommand(Command.changeUsernameCommand(newName));
+    }
+
+    public void sendLoginPassRequest(String username) {
+        sendCommand(Command.loginPassCommand(username));
     }
 
     public void close() {

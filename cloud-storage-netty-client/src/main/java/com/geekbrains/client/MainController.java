@@ -68,9 +68,7 @@ public class MainController implements Initializable {
 
         ds = new DBService();
 
-        loginAs.getItems().clear();
-        loginAs.getItems().addAll(ds.getUsernames());
-        loginAs.getItems().add(NEW_USER);
+        fillLoginAsCombo();
 
         disksBox.getItems().clear();
         for (Path p : FileSystems.getDefault().getRootDirectories()) {
@@ -85,6 +83,9 @@ public class MainController implements Initializable {
         rememberMeMenuItem.setOnAction(event -> {
             if (!rememberMeMenuItem.isSelected()) {
                 ds.removeUser(username);
+                fillLoginAsCombo();
+            }else if (network.isConnect()){
+                network.sendLoginPassRequest(username);
             }
         });
 
@@ -128,18 +129,27 @@ public class MainController implements Initializable {
         renameServerItem.setOnAction(event -> renameRequest());
     }
 
+    private void fillLoginAsCombo() {
+        loginAs.getItems().clear();
+        loginAs.getItems().addAll(ds.getUsernames());
+        loginAs.getItems().add(NEW_USER);
+    }
+
     public void selectLogin() {
-        if (loginAs.getSelectionModel().getSelectedItem().equals(NEW_USER)) {
-            network.interruptThread();
-            network.connect();
-            App.INSTANCE.getAuthStage().show();
-        } else {
-            network.interruptThread();
-            network.connect();
-            List<String> loginPass = ds.getLoginPass(loginAs.getSelectionModel().getSelectedItem());
-            network.sendAuthMessage(loginPass.get(0), loginPass.get(1).toCharArray());
-            rememberMeMenuItem.setSelected(true);
+        if (loginAs.getSelectionModel().getSelectedItem() != null){
+            if (loginAs.getSelectionModel().getSelectedItem().equals(NEW_USER)) {
+                network.interruptThread();
+                network.connect();
+                App.INSTANCE.getAuthStage().show();
+            } else {
+                network.interruptThread();
+                network.connect();
+                List<String> loginPass = ds.getLoginPass(loginAs.getSelectionModel().getSelectedItem());
+                network.sendAuthMessage(loginPass.get(0), loginPass.get(1).toCharArray());
+                rememberMeMenuItem.setSelected(true);
+            }
         }
+
     }
 
     public void selectDiskAction() {
@@ -568,6 +578,8 @@ public class MainController implements Initializable {
                 ds.changeUsername(name, username);
             }
             network.sendChangeUsername(name);
+            fillLoginAsCombo();
+            loginAs.getSelectionModel().select(name);
         }
     }
 
@@ -591,6 +603,13 @@ public class MainController implements Initializable {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public void addNewUser(String login, char[] password) {
+        ds.addNewUser(username, login, password);
+        showAlert(username + " remembered", Alert.AlertType.INFORMATION);
+        fillLoginAsCombo();
+        loginAs.getSelectionModel().select(username);
     }
 }
 

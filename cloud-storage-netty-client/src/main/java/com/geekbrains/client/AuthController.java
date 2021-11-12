@@ -22,8 +22,6 @@ public class AuthController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        loginField.clear();
-        passwordField.clear();
         rememberMe.setOnAction(event -> App.INSTANCE.getMainController().rememberMeMenuItem.setSelected(rememberMe.isSelected()));
     }
 

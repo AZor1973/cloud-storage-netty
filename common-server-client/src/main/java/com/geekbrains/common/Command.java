@@ -104,4 +104,11 @@ public class Command implements Serializable {
         command.data = new ChangeUsernameCommandData(newName);
         return command;
     }
+
+    public static Command loginPassCommand(String username) {
+        Command command = new Command();
+        command.type = CommandType.LOGIN_PASS;
+        command.data = new LoginPassCommandData(username);
+        return command;
+    }
 }

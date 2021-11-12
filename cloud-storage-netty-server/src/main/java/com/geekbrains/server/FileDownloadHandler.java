@@ -51,6 +51,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             case CREATE_DIR_REQUEST -> createDirectory(ctx, msg);
             case RENAME_REQUEST -> renameFile(ctx, msg);
             case CHANGE_USERNAME -> changeUsername(ctx, msg);
+            case LOGIN_PASS -> getLoginPass(ctx, msg);
         }
     }
 
@@ -111,6 +112,7 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
     }
 
     // Если файл существует - делаем копию, а не удаляем (с учётом загрузки частями).
+
     private Path getPathOfCopy(String fileName, boolean isStart) {
         Path path = pathDir.resolve(fileName);
         String name;
@@ -133,7 +135,6 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
         }
         return path;
     }
-
 
     private void fileDownload(ChannelHandlerContext ctx, Command msg) throws IOException {
         FileRequestCommandData data = (FileRequestCommandData) msg.getData();
@@ -258,6 +259,14 @@ public class FileDownloadHandler extends SimpleChannelInboundHandler<Command> {
             updateFileList(ctx, pathDir);
         } else {
             ctx.writeAndFlush(Command.errorCommand("This user is already registered!"));
+        }
+    }
+
+    private void getLoginPass(ChannelHandlerContext ctx, Command msg) {
+        LoginPassCommandData data = (LoginPassCommandData) msg.getData();
+        List<String> result = ds.getLoginPass(data.getUsername());
+        if (result != null){
+            ctx.writeAndFlush(Command.authCommand(result.get(0), result.get(1).toCharArray()));
         }
     }
 
