@@ -612,10 +612,10 @@ public class MainController implements Initializable {
         loginAs.getSelectionModel().select(username);
     }
 
-    void selectLoginAsCombo(String select){
-        if (loginAs.getSelectionModel().getSelectedItem().equals(select)){
+    void selectLoginAsCombo(String select) {
+        if (loginAs.getSelectionModel().getSelectedItem().equals(select)) {
             loginAs.getSelectionModel().select(select);
-        }else {
+        } else {
             loginAs.getSelectionModel().clearSelection();
         }
     }
