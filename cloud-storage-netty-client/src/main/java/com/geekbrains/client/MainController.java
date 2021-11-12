@@ -84,7 +84,7 @@ public class MainController implements Initializable {
             if (!rememberMeMenuItem.isSelected()) {
                 ds.removeUser(username);
                 fillLoginAsCombo();
-            }else if (network.isConnect()){
+            } else if (network.isConnect()) {
                 network.sendLoginPassRequest(username);
             }
         });
@@ -136,7 +136,7 @@ public class MainController implements Initializable {
     }
 
     public void selectLogin() {
-        if (loginAs.getSelectionModel().getSelectedItem() != null){
+        if (loginAs.getSelectionModel().getSelectedItem() != null) {
             if (loginAs.getSelectionModel().getSelectedItem().equals(NEW_USER)) {
                 network.interruptThread();
                 network.connect();
@@ -610,6 +610,14 @@ public class MainController implements Initializable {
         showAlert(username + " remembered", Alert.AlertType.INFORMATION);
         fillLoginAsCombo();
         loginAs.getSelectionModel().select(username);
+    }
+
+    void selectLoginAsCombo(String select){
+        if (loginAs.getSelectionModel().getSelectedItem().equals(select)){
+            loginAs.getSelectionModel().select(select);
+        }else {
+            loginAs.getSelectionModel().clearSelection();
+        }
     }
 }
 

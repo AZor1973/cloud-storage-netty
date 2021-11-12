@@ -86,8 +86,9 @@ public class Network {
             } catch (Exception e) {
                 isConnect = false;
                 log.debug("Network error");
-                e.printStackTrace();
-                Platform.runLater(() -> App.INSTANCE.getMainController().showAlert("Network error", Alert.AlertType.ERROR));
+                if (!(e instanceof InterruptedException)) {
+                    Platform.runLater(() -> App.INSTANCE.getMainController().showAlert("Network error", Alert.AlertType.ERROR));
+                }
             } finally {
                 workerGroup.shutdownGracefully();
             }
@@ -132,6 +133,7 @@ public class Network {
                 App.INSTANCE.switchToMainWindow(username);
                 App.INSTANCE.getMainController().connectLabel.setText("SERVER: ON");
                 App.INSTANCE.getMainController().showAlert("You are signed in as " + username, Alert.AlertType.INFORMATION);
+                App.INSTANCE.getMainController().selectLoginAsCombo(username);
             });
         } else if (command.getType() == CommandType.UPDATE_FILE_LIST) {
             UpdateFileListCommandData data = (UpdateFileListCommandData) command.getData();
@@ -145,7 +147,7 @@ public class Network {
                     e.printStackTrace();
                 }
             });
-        }else if (command.getType() == CommandType.AUTH){
+        } else if (command.getType() == CommandType.AUTH) {
             AuthCommandData data = (AuthCommandData) command.getData();
             Platform.runLater(() -> App.INSTANCE.getMainController().addNewUser(data.getLogin(), data.getPassword()));
         }

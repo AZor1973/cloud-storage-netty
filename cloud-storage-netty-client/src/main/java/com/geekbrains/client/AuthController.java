@@ -1,14 +1,10 @@
 package com.geekbrains.client;
 
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyEvent;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
-public class AuthController implements Initializable {
+public class AuthController {
     @FXML
     public Button authButton;
     @FXML
@@ -20,11 +16,6 @@ public class AuthController implements Initializable {
     @FXML
     private PasswordField passwordField;
 
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        rememberMe.setOnAction(event -> App.INSTANCE.getMainController().rememberMeMenuItem.setSelected(rememberMe.isSelected()));
-    }
-
     @FXML
     public void executeAuth() {
         String login = loginField.getText();
@@ -33,11 +24,8 @@ public class AuthController implements Initializable {
             App.INSTANCE.getMainController().showAlert("Fields must be filled", Alert.AlertType.ERROR);
             return;
         }
-        if (Network.getInstance().isConnect()) {
             Network.getInstance().sendAuthMessage(login, password);
-        } else {
-            App.INSTANCE.getMainController().showAlert("Network error", Alert.AlertType.ERROR);
-        }
+            App.INSTANCE.getMainController().rememberMeMenuItem.setSelected(rememberMe.isSelected());
     }
 
     public void registration() {

@@ -1,15 +1,11 @@
 package com.geekbrains.client;
 
 import javafx.fxml.FXML;
-import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 
-import java.net.URL;
-import java.util.ResourceBundle;
-
-public class RegController implements Initializable {
+public class RegController{
     @FXML
     public Button submitRegButton;
     @FXML
@@ -20,14 +16,6 @@ public class RegController implements Initializable {
     public TextField nickField;
     @FXML
     public CheckBox rememberMeReg;
-
-    @Override
-    public void initialize(URL location, ResourceBundle resources) {
-        rememberMeReg.setOnAction(event -> {
-            App.INSTANCE.getAuthController().rememberMe.setSelected(rememberMeReg.isSelected());
-            App.INSTANCE.getMainController().rememberMeMenuItem.setSelected(rememberMeReg.isSelected());
-        });
-    }
 
     public void submitRegistration() {
         String login = loginFieldReg.getText();
@@ -41,8 +29,10 @@ public class RegController implements Initializable {
             App.INSTANCE.getAuthController().setLoginField(login);
             App.INSTANCE.getAuthController().setPasswordField(new String((password)));
         }
-        Network.getInstance().sendRegMessage(username, login, password);
-        App.INSTANCE.getRegStage().close();
+            Network.getInstance().sendRegMessage(username, login, password);
+            App.INSTANCE.getAuthController().rememberMe.setSelected(rememberMeReg.isSelected());
+            App.INSTANCE.getMainController().rememberMeMenuItem.setSelected(rememberMeReg.isSelected());
+            App.INSTANCE.getRegStage().close();
     }
 
     // Вспомогательные методы для удобства навигации между полями
