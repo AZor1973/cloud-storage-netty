@@ -12,19 +12,14 @@ import io.netty.handler.codec.serialization.*;
 import javafx.application.Platform;
 import javafx.scene.control.Alert;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
 
 @Slf4j
 public class Network {
 
     private static final int SERVER_PORT = 8189;
     private static final String SERVER_HOST = "localhost";
-    public static final String REMEMBERED_DIR = "remembered";
     private static Network INSTANCE;
     private final String host;
     private final int port;
@@ -128,7 +123,7 @@ public class Network {
             AuthOkCommandData data = (AuthOkCommandData) command.getData();
             log.debug("Auth OK: " + data.getUsername());
             String username = data.getUsername();
-            if (App.INSTANCE.getAuthStage().isShowing() && App.INSTANCE.getAuthController().rememberMe.isSelected()){
+            if (App.INSTANCE.getAuthStage().isShowing() && App.INSTANCE.getAuthController().rememberMe.isSelected()) {
                 String login = App.INSTANCE.getAuthController().getLoginField().getText();
                 char[] pass = App.INSTANCE.getAuthController().getPasswordField().getText().toCharArray();
                 App.INSTANCE.getMainController().getDs().addNewUser(username, login, pass);

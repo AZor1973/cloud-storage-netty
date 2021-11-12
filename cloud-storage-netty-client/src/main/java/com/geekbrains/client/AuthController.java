@@ -93,7 +93,7 @@ public class AuthController implements Initializable {
     }
 
     public void setLoginField(String text) {
-       loginField.setText(text);
+        loginField.setText(text);
     }
 
     public void setPasswordField(String text) {

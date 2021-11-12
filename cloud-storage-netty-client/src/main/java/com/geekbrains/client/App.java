@@ -1,7 +1,6 @@
 package com.geekbrains.client;
 
 import javafx.application.Application;
-import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -9,9 +8,6 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Optional;
 
 public class App extends Application {
     public static App INSTANCE;
@@ -105,8 +101,8 @@ public class App extends Application {
         return regStage;
     }
 
-    Stage getAuthStage(){
-        return  authStage;
+    Stage getAuthStage() {
+        return authStage;
     }
 
     public static void main(String[] args) {

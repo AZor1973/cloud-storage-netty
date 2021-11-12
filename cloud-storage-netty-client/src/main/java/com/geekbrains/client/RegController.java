@@ -37,7 +37,7 @@ public class RegController implements Initializable {
             App.INSTANCE.getMainController().showAlert("Fields must be filled", Alert.AlertType.ERROR);
             return;
         }
-        if (rememberMeReg.isSelected()){
+        if (rememberMeReg.isSelected()) {
             App.INSTANCE.getAuthController().setLoginField(login);
             App.INSTANCE.getAuthController().setPasswordField(new String((password)));
         }
