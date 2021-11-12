@@ -37,7 +37,11 @@ public class RegController implements Initializable {
             App.INSTANCE.getMainController().showAlert("Fields must be filled", Alert.AlertType.ERROR);
             return;
         }
-        Network.getInstance().sendRegMessage(username, login, password, rememberMeReg.isSelected());
+        if (rememberMeReg.isSelected()){
+            App.INSTANCE.getAuthController().setLoginField(login);
+            App.INSTANCE.getAuthController().setPasswordField(new String((password)));
+        }
+        Network.getInstance().sendRegMessage(username, login, password);
         App.INSTANCE.getRegStage().close();
     }
 

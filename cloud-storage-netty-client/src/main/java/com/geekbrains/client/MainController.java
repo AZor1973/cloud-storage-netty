@@ -30,6 +30,8 @@ public class MainController implements Initializable {
     @FXML
     public ComboBox<String> disksBox;
     @FXML
+    public ComboBox<String> loginAs;
+    @FXML
     public Label currentPathLabelClient;
     @FXML
     public Label currentPathLabelServer;
@@ -53,16 +55,22 @@ public class MainController implements Initializable {
     private static final String WARN_RESOURCE = "com/geekbrains/client/warn.css";
     private static final String INFO_RESOURCE = "com/geekbrains/client/info.css";
     private static final String RECONNECT_STRING = "SERVER: OFF. Reconnect?";
+    private static final String NEW_USER = "New user";
     private Network network;
+    private DBService ds;
     private Path currentPath;
-    private Path startPath;
     private String username;
     private int copyNumber = 0;  // Если файл существует - делаем копию, а не удаляем (с учётом загрузки частями).
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         network = Network.getInstance();
-        network.connect();
+
+        ds = new DBService();
+
+        loginAs.getItems().clear();
+        loginAs.getItems().addAll(ds.getUsernames());
+        loginAs.getItems().add(NEW_USER);
 
         disksBox.getItems().clear();
         for (Path p : FileSystems.getDefault().getRootDirectories()) {
@@ -70,40 +78,13 @@ public class MainController implements Initializable {
         }
         disksBox.getSelectionModel().select(0);
 
-        startPath = Path.of(disksBox.getSelectionModel().getSelectedItem());
-        currentPath = startPath;
+        currentPath = Path.of(disksBox.getSelectionModel().getSelectedItem());
         updateClientListView(currentPath);
-// Ставим галочку, если реализована автоаутентификация
-        if (Files.exists(startPath.resolve(Network.REMEMBERED_DIR))) {
-            rememberMeMenuItem.setSelected(true);
-        }
-        // Удаляем запомненное имя при снятии галочки
+
+        // Удаляем запомненную уч. запись при снятии галочки
         rememberMeMenuItem.setOnAction(event -> {
-            if (!rememberMeMenuItem.isSelected() && Files.exists(startPath.resolve(Network.REMEMBERED_DIR))) {
-                try {
-                    FileUtils.forceDelete(startPath.resolve(Network.REMEMBERED_DIR).toFile());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            // Если стоит галочка запомнить - создаём файл с именем юзера
-            if (rememberMeMenuItem.isSelected() && !Files.exists(startPath.resolve(Network.REMEMBERED_DIR))) {
-                Path path = Path.of(startPath.toString(), Network.REMEMBERED_DIR);
-                try {
-                    Files.createDirectory(path);
-                    Files.createFile(path.resolve(username));
-                    log.debug(username + " file created");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    log.error("didn't create ");
-                    try {
-                        if (Files.exists(path))
-                            FileUtils.forceDelete(path.toFile());
-                    } catch (IOException ex) {
-                        ex.printStackTrace();
-                    }
-                }
-                System.out.println();
+            if (!rememberMeMenuItem.isSelected()) {
+                ds.removeUser(username);
             }
         });
 
@@ -145,6 +126,20 @@ public class MainController implements Initializable {
         deleteServerItem.setOnAction(event -> deleteRequest());
         newDirServerItem.setOnAction(event -> createDirRequest());
         renameServerItem.setOnAction(event -> renameRequest());
+    }
+
+    public void selectLogin() {
+        if (loginAs.getSelectionModel().getSelectedItem().equals(NEW_USER)) {
+            network.interruptThread();
+            network.connect();
+            App.INSTANCE.getAuthStage().show();
+        } else {
+            network.interruptThread();
+            network.connect();
+            List<String> loginPass = ds.getLoginPass(loginAs.getSelectionModel().getSelectedItem());
+            network.sendAuthMessage(loginPass.get(0), loginPass.get(1).toCharArray());
+            rememberMeMenuItem.setSelected(true);
+        }
     }
 
     public void selectDiskAction() {
@@ -552,30 +547,26 @@ public class MainController implements Initializable {
         }
     }
 
-    public void labelReconnect(MouseEvent mouseEvent) throws IOException {
+    public void labelReconnect(MouseEvent mouseEvent) {
         if (mouseEvent.getClickCount() == 2 && connectLabel.getText().equals(RECONNECT_STRING)) {
             reconnect();
         }
     }
 
     // Переподключаемся к серверу, если соединение прервано
-    private void reconnect() throws IOException {
+    private void reconnect() {
+        network.interruptThread();
         network.connect();
-        long start = System.currentTimeMillis();
-        while (!network.isConnect()) {
-            Thread.onSpinWait();
-            if ((System.currentTimeMillis() - start) > 3000) {
-                return;
-            }
-        }
-        if (network.isConnect()) {
-            App.INSTANCE.initAuthWindow();
-        }
+        List<String> loginPass = ds.getLoginPass(username);
+        network.sendAuthMessage(loginPass.get(0), loginPass.get(1).toCharArray());
     }
 
     public void changeUsername() {
         String name = getNewNameFromDialog("Enter new name", "Change nick", "New name:");
         if (!name.isBlank()) {
+            if (rememberMeMenuItem.isSelected()) {
+                ds.changeUsername(name, username);
+            }
             network.sendChangeUsername(name);
         }
     }
@@ -594,8 +585,8 @@ public class MainController implements Initializable {
         serverListView.requestFocus();
     }
 
-    public Path getStartPath() {
-        return startPath;
+    public DBService getDs() {
+        return ds;
     }
 
     public void setUsername(String username) {

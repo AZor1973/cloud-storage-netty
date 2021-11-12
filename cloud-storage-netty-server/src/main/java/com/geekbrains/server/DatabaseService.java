@@ -10,16 +10,10 @@ public class DatabaseService {
     private static final String GET_USERNAME_REQUEST = "SELECT user FROM users WHERE login = ? AND password = ?";
     private static final String CHANGE_USERNAME_REQUEST = "UPDATE users SET user = ? WHERE user = ?";
     private static final String ADD_NEW_USER_REQUEST = "INSERT INTO users(login, password, user) VALUES(?, ?, ?)";
-    private static final String ADD_REMEMBERED_USER_REQUEST = "INSERT INTO remembered_users(user) VALUES(?)";
-    private static final String CHECK_REMEMBERED_USER_REQUEST = "SELECT user FROM remembered_users WHERE user = ?";
-    private static final String FORGET_USER_REQUEST = "DELETE FROM remembered_users WHERE user = ?";
     private Connection connection;
     private PreparedStatement getUsernameStatement;
     private PreparedStatement changeUsernameStatement;
     private PreparedStatement addNewUserStatement;
-    private PreparedStatement addRememberedUserStatement;
-    private PreparedStatement checkRememberedUserStatement;
-    private PreparedStatement forgetUserStatement;
 
     public DatabaseService() {
         try {
@@ -28,9 +22,6 @@ public class DatabaseService {
             getUsernameStatement = connection.prepareStatement(GET_USERNAME_REQUEST);
             changeUsernameStatement = connection.prepareStatement(CHANGE_USERNAME_REQUEST);
             addNewUserStatement = connection.prepareStatement(ADD_NEW_USER_REQUEST);
-            addRememberedUserStatement = connection.prepareStatement(ADD_REMEMBERED_USER_REQUEST);
-            checkRememberedUserStatement = connection.prepareStatement(CHECK_REMEMBERED_USER_REQUEST);
-            forgetUserStatement = connection.prepareStatement(FORGET_USER_REQUEST);
         } catch (SQLException e) {
             log.error("Failed to database connection");
         }
@@ -82,35 +73,6 @@ public class DatabaseService {
             }
         } catch (SQLException e) {
             log.error("Failed to close database connection");
-        }
-    }
-
-    public void rememberUser(String username) {
-        try {
-            addRememberedUserStatement.setString(1, username);
-            addRememberedUserStatement.executeUpdate();
-        } catch (SQLException e) {
-            log.error("Failed to database connection");
-        }
-    }
-
-    public boolean checkRememberedUser(String username) {
-        try {
-            checkRememberedUserStatement.setString(1, username);
-            checkRememberedUserStatement.executeQuery();
-            return true;
-        } catch (SQLException e) {
-            log.error("Failed to database connection");
-            return false;
-        }
-    }
-
-    public void forgetUser(String username) {
-        try {
-            forgetUserStatement.setString(1, username);
-            forgetUserStatement.executeUpdate();
-        } catch (SQLException e) {
-            log.error("Failed to database connection");
         }
     }
 }

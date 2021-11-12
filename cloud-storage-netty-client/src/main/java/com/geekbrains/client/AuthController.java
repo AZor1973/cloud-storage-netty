@@ -22,6 +22,8 @@ public class AuthController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        loginField.clear();
+        passwordField.clear();
         rememberMe.setOnAction(event -> App.INSTANCE.getMainController().rememberMeMenuItem.setSelected(rememberMe.isSelected()));
     }
 
@@ -34,7 +36,7 @@ public class AuthController implements Initializable {
             return;
         }
         if (Network.getInstance().isConnect()) {
-            Network.getInstance().sendAuthMessage(login, password, rememberMe.isSelected(), null);
+            Network.getInstance().sendAuthMessage(login, password);
         } else {
             App.INSTANCE.getMainController().showAlert("Network error", Alert.AlertType.ERROR);
         }
@@ -80,5 +82,21 @@ public class AuthController implements Initializable {
             case DOWN -> loginField.requestFocus();
             case RIGHT -> authButton.requestFocus();
         }
+    }
+
+    public TextField getLoginField() {
+        return loginField;
+    }
+
+    public PasswordField getPasswordField() {
+        return passwordField;
+    }
+
+    public void setLoginField(String text) {
+       loginField.setText(text);
+    }
+
+    public void setPasswordField(String text) {
+        passwordField.setText(text);
     }
 }

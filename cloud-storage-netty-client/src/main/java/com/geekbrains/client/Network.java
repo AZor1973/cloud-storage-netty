@@ -30,6 +30,8 @@ public class Network {
     private final int port;
     private SocketChannel socketChannel;
     private volatile boolean isConnect;
+    private Thread thread;
+    private ChannelFuture future;
 
     public static Network getInstance() {
         if (INSTANCE == null) {
@@ -48,7 +50,7 @@ public class Network {
     }
 
     public void connect() {
-        Thread thread = new Thread(() -> {
+        thread = new Thread(() -> {
             EventLoopGroup workerGroup = new NioEventLoopGroup();
             try {
                 Bootstrap bootstrap = new Bootstrap();
@@ -82,7 +84,7 @@ public class Network {
                                 );
                             }
                         });
-                ChannelFuture future = bootstrap.connect(host, port).sync();
+                future = bootstrap.connect(host, port).sync();
                 log.debug("connect");
                 isConnect = true;
                 future.channel().closeFuture().sync();
@@ -99,6 +101,20 @@ public class Network {
         thread.start();
     }
 
+    public void interruptThread() {
+        if (thread != null && thread.isAlive()) {
+            thread.interrupt();
+            long start = System.currentTimeMillis();
+            while (thread.isAlive()) {
+                Thread.onSpinWait();
+                if ((System.currentTimeMillis() - start) > 5000) {
+                    Platform.runLater(() -> App.INSTANCE.getMainController().showAlert("Interrupt error", Alert.AlertType.ERROR));
+                    return;
+                }
+            }
+        }
+    }
+
     public void readCommand(Command command) {
         if (command.getType() == CommandType.INFO) {
             InfoCommandData data = (InfoCommandData) command.getData();
@@ -112,33 +128,10 @@ public class Network {
             AuthOkCommandData data = (AuthOkCommandData) command.getData();
             log.debug("Auth OK: " + data.getUsername());
             String username = data.getUsername();
-            // Если стоит галочка запомнить - создаём файл с именем юзера
-            Path path = Path.of(App.INSTANCE.getMainController().getStartPath().toString(), REMEMBERED_DIR);
-            if (App.INSTANCE.getAuthController().rememberMe.isSelected() || Files.exists(path)) {
-                try {
-                    if (!Files.exists(path)) {
-                        Files.createDirectory(path);
-                        Files.createFile(path.resolve(username));
-                        log.debug(username + " file created");
-                    } else {
-                        Optional<Path> optionalPath = Files.list(path).findAny();
-                        if (optionalPath.isPresent()) {
-                            Path filePath = optionalPath.get();
-                            Files.move(filePath, filePath.resolveSibling(username));
-                            log.debug(filePath.getFileName().toString() + " changed name to " + username);
-                        }
-                    }
-                } catch (IOException e) {
-                    if (Files.exists(path)) {
-                        try {
-                            FileUtils.forceDelete(path.toFile());
-                        } catch (IOException ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-                    e.printStackTrace();
-                    log.error("didn't create ");
-                }
+            if (App.INSTANCE.getAuthStage().isShowing() && App.INSTANCE.getAuthController().rememberMe.isSelected()){
+                String login = App.INSTANCE.getAuthController().getLoginField().getText();
+                char[] pass = App.INSTANCE.getAuthController().getPasswordField().getText().toCharArray();
+                App.INSTANCE.getMainController().getDs().addNewUser(username, login, pass);
             }
             Platform.runLater(() -> App.INSTANCE.switchToMainWindow(username));
             Platform.runLater(() -> App.INSTANCE.getMainController().connectLabel.setText("SERVER: ON"));
@@ -182,12 +175,12 @@ public class Network {
         }
     }
 
-    public void sendAuthMessage(String login, char[] password, boolean isRemember, String username) {
-        sendCommand(Command.authCommand(login, password, isRemember, username));
+    public void sendAuthMessage(String login, char[] password) {
+        sendCommand(Command.authCommand(login, password));
     }
 
-    public void sendRegMessage(String username, String login, char[] password, boolean isRemember) {
-        sendCommand(Command.regCommand(username, login, password, isRemember));
+    public void sendRegMessage(String username, String login, char[] password) {
+        sendCommand(Command.regCommand(username, login, password));
     }
 
     public void sendFileRequest(String fileNameToDownload) {
@@ -215,7 +208,8 @@ public class Network {
     }
 
     public void close() {
-        socketChannel.close();
+        if (socketChannel != null)
+            socketChannel.close();
     }
 
     public boolean isConnect() {

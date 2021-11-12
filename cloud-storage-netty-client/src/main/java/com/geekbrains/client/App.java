@@ -48,7 +48,11 @@ public class App extends Application {
         Parent root = mainLoader.load();
         this.primaryStage.setScene(new Scene(root));
         primaryStage.getScene().getStylesheets().add("com/geekbrains/client/sky.css");
-        primaryStage.setOnCloseRequest(we -> Network.getInstance().close());
+        primaryStage.setOnCloseRequest(we -> {
+            Network.getInstance().close();
+            getMainController().getDs().closeConnection();
+        });
+        primaryStage.show();
     }
 
     void initAuthWindow() throws IOException {
@@ -62,20 +66,6 @@ public class App extends Application {
         authStage.getScene().getStylesheets().add("com/geekbrains/client/sky.css");
         authStage.setResizable(false);
         getAuthController().loginFocus();  // фокус на поле логина (для удобства)
-        authStage.setOnCloseRequest(we -> Network.getInstance().close());
-        // Если реализована автоаутентификация - подключаемся с сохранённым именем
-        // имя юзера = имя файла
-        // Иначе проходим аутентификацию
-        Path path = getMainController().getStartPath().resolve(Network.REMEMBERED_DIR);
-        if (Files.exists(path)) {
-            Optional<Path> optionalPath = Files.list(path).findAny();
-            if (optionalPath.isPresent()) {
-                String username = optionalPath.get().getFileName().toString();
-                Platform.runLater(() -> Network.getInstance().sendAuthMessage(null, null, false, username));
-            }
-        } else {
-            authStage.show();
-        }
     }
 
     private void initRegWindow() throws IOException {
@@ -113,6 +103,10 @@ public class App extends Application {
 
     Stage getRegStage() {
         return regStage;
+    }
+
+    Stage getAuthStage(){
+        return  authStage;
     }
 
     public static void main(String[] args) {

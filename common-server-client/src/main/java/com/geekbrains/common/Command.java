@@ -14,16 +14,16 @@ public class Command implements Serializable {
     private Object data;
     private CommandType type;
 
-    public static Command regCommand(String username, String login, char[] password, boolean isRemember) {
+    public static Command regCommand(String username, String login, char[] password) {
         Command command = new Command();
-        command.data = new RegCommandData(username, login, password, isRemember);
+        command.data = new RegCommandData(username, login, password);
         command.type = CommandType.REG;
         return command;
     }
 
-    public static Command authCommand(String login, char[] password, boolean isRemember, String username) {
+    public static Command authCommand(String login, char[] password) {
         Command command = new Command();
-        command.data = new AuthCommandData(login, password, isRemember, username);
+        command.data = new AuthCommandData(login, password);
         command.type = CommandType.AUTH;
         return command;
     }

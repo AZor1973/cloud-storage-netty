@@ -26,13 +26,14 @@
                 <Insets />
             </opaqueInsets>
             <Label fx:id="connectLabel" onMouseClicked="#labelReconnect" text="SERVER: OFF. Reconnect?" />
-            <VBox alignment="TOP_RIGHT" prefHeight="200.0" prefWidth="100.0">
-                <ComboBox fx:id="disksBox" onAction="#selectDiskAction">
-                    <VBox.margin>
-                        <Insets bottom="20.0" />
-                    </VBox.margin>
+            <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0">
+                <ComboBox fx:id="loginAs" onAction="#selectLogin" promptText="Login as ...">
+                    <HBox.margin>
+                        <Insets right="50.0" />
+                    </HBox.margin>
                 </ComboBox>
-            </VBox>
+                <ComboBox fx:id="disksBox" onAction="#selectDiskAction" />
+            </HBox>
             <VBox alignment="TOP_CENTER" prefHeight="200.0" prefWidth="100.0" VBox.vgrow="ALWAYS">
                 <Button fx:id="uploadButton" mnemonicParsing="false" onAction="#upload" styleClass="arrowButton" text="&lt;&lt;">
                     <VBox.margin>
@@ -61,8 +62,8 @@
     </HBox>
     <MenuBar>
         <Menu mnemonicParsing="false" text="Menu">
-            <MenuItem mnemonicParsing="false" onAction="#changeUsername" text="Change Nick"/>
-            <CheckMenuItem fx:id="rememberMeMenuItem" mnemonicParsing="false" text="Remember me"/>
+            <MenuItem mnemonicParsing="false" onAction="#changeUsername" text="Change Nick" />
+            <CheckMenuItem fx:id="rememberMeMenuItem" mnemonicParsing="false" text="Remember me" />
         </Menu>
     </MenuBar>
 </AnchorPane>
