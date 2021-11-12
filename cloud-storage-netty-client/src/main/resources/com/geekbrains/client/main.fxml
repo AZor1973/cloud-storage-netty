@@ -29,7 +29,7 @@
             <HBox alignment="TOP_CENTER" prefHeight="100.0" prefWidth="200.0">
                 <ComboBox fx:id="loginAs" onAction="#selectLogin" promptText="Login as ...">
                     <HBox.margin>
-                        <Insets right="50.0" />
+                        <Insets right="30.0" />
                     </HBox.margin>
                 </ComboBox>
                 <ComboBox fx:id="disksBox" onAction="#selectDiskAction" />
