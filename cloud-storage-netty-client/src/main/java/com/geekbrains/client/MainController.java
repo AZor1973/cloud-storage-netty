@@ -1,6 +1,10 @@
 package com.geekbrains.client;
 
+import com.geekbrains.client.listener.ConnectionEvent;
+import com.geekbrains.client.listener.ConnectionListener;
 import com.geekbrains.common.commands.FileInfoCommandData;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -54,7 +58,7 @@ public class MainController implements Initializable {
     private static final int BUFFER_SIZE = 8192;
     private static final String WARN_RESOURCE = "com/geekbrains/client/warn.css";
     private static final String INFO_RESOURCE = "com/geekbrains/client/info.css";
-    private static final String CONNECTION_DISABLED_STRING = "SERVER: OFF. Reconnect?";
+    public static final String CONNECTION_DISABLED_STRING = "SERVER: OFF. Reconnect?";
     private static final String NEW_USER = "New user";
     private Network network;
     private DBService dbService;
@@ -84,7 +88,7 @@ public class MainController implements Initializable {
             if (!rememberMeMenuItem.isSelected()) {
                 dbService.removeUser(username);
                 fillLoginAsCombo();
-            } else if (network.isConnect()) {
+            } else if (network.getIsConnect()) {
                 network.sendLoginPassRequest(username);
             }
         });
@@ -127,6 +131,24 @@ public class MainController implements Initializable {
         deleteServerItem.setOnAction(event -> deleteRequest());
         newDirServerItem.setOnAction(event -> createDirRequest());
         renameServerItem.setOnAction(event -> renameRequest());
+
+        Service<Void> service = new Service<>() {
+            @Override
+            protected Task<Void> createTask() {
+                return new Task<>() {
+                    @Override
+                    protected Void call() throws InterruptedException {
+                        var catholicChurch = new ConnectionEvent();
+                        new ConnectionListener(catholicChurch);
+                        while (true) {
+                            Thread.sleep(1000);
+                            catholicChurch.setConnection(network.getIsConnect());
+                        }
+                    }
+                };
+            }
+        };
+        service.start();
     }
 
     private void fillLoginAsCombo() {
@@ -550,7 +572,7 @@ public class MainController implements Initializable {
     }
 
     public void connectLost() throws IOException, InterruptedException {
-        connectLabel.setText(CONNECTION_DISABLED_STRING);
+//        connectLabel.setText(CONNECTION_DISABLED_STRING);
         log.warn("Connection lost");
         if (showAlert("Connection lost. Reconnect?", Alert.AlertType.CONFIRMATION)) {
             reconnect();
@@ -618,6 +640,10 @@ public class MainController implements Initializable {
         } else {
             loginAs.getSelectionModel().clearSelection();
         }
+    }
+
+    public void setConnectLabel(String connectionState) {
+        connectLabel.setText(connectionState);
     }
 }
 
