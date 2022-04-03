@@ -1,7 +1,7 @@
 package com.geekbrains.client.listener;
 
 public interface Event {
-    void registerConnectionListener(ConnectionListener connectionListener);
+    void registerListener(Listener Listener);
 
-    void notifyConnectionListener();
+    void notifyListener();
 }

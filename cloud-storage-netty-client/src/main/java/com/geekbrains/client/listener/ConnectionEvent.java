@@ -4,26 +4,26 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 public class ConnectionEvent implements Event {
-    private final List<ConnectionListener> connectionListeners;
+    private final List<Listener> listeners;
     private boolean isConnect;
 
     public ConnectionEvent() {
-        connectionListeners = new CopyOnWriteArrayList<>();
+        listeners = new CopyOnWriteArrayList<>();
     }
 
     public synchronized void setConnection(boolean isConnect) {
         this.isConnect = isConnect;
-        notifyConnectionListener();
+        notifyListener();
     }
 
     @Override
-    public synchronized void registerConnectionListener(ConnectionListener connectionListener) {
-        connectionListeners.add(connectionListener);
+    public synchronized void registerListener(Listener listener) {
+        listeners.add(listener);
     }
 
     @Override
-    public synchronized void notifyConnectionListener() {
-        for (ConnectionListener connectionListener : connectionListeners)
-            connectionListener.update(isConnect);
+    public synchronized void notifyListener() {
+        for (Listener listener : listeners)
+            listener.update(isConnect);
     }
 }

@@ -138,11 +138,11 @@ public class MainController implements Initializable {
                 return new Task<>() {
                     @Override
                     protected Void call() throws InterruptedException {
-                        var catholicChurch = new ConnectionEvent();
-                        new ConnectionListener(catholicChurch);
+                        var event = new ConnectionEvent();
+                        new ConnectionListener(event);
                         while (true) {
                             Thread.sleep(1000);
-                            catholicChurch.setConnection(network.getIsConnect());
+                            event.setConnection(network.getIsConnect());
                         }
                     }
                 };

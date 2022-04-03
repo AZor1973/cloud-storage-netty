@@ -8,7 +8,7 @@ import javafx.application.Platform;
 public class ConnectionListener implements Listener{
 
     public ConnectionListener(Event event) {
-        event.registerConnectionListener(this);
+        event.registerListener(this);
     }
 
     public synchronized void update(boolean isConnect) {
