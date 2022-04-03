@@ -46,7 +46,7 @@ public class App extends Application {
         primaryStage.getScene().getStylesheets().add("com/geekbrains/client/sky.css");
         primaryStage.setOnCloseRequest(we -> {
             Network.getInstance().close();
-            getMainController().getDs().closeConnection();
+            getMainController().getDbService().closeConnection();
         });
         primaryStage.show();
     }

@@ -57,7 +57,7 @@ public class MainController implements Initializable {
     private static final String RECONNECT_STRING = "SERVER: OFF. Reconnect?";
     private static final String NEW_USER = "New user";
     private Network network;
-    private DBService ds;
+    private DBService dbService;
     private Path currentPath;
     private String username;
     private int copyNumber = 0;  // Если файл существует - делаем копию, а не удаляем (с учётом загрузки частями).
@@ -66,7 +66,7 @@ public class MainController implements Initializable {
     public void initialize(URL location, ResourceBundle resources) {
         network = Network.getInstance();
 
-        ds = new DBService();
+        dbService = new DBService();
 
         fillLoginAsCombo();
 
@@ -82,7 +82,7 @@ public class MainController implements Initializable {
         // Удаляем запомненную уч. запись при снятии галочки
         rememberMeMenuItem.setOnAction(event -> {
             if (!rememberMeMenuItem.isSelected()) {
-                ds.removeUser(username);
+                dbService.removeUser(username);
                 fillLoginAsCombo();
             } else if (network.isConnect()) {
                 network.sendLoginPassRequest(username);
@@ -131,7 +131,7 @@ public class MainController implements Initializable {
 
     private void fillLoginAsCombo() {
         loginAs.getItems().clear();
-        loginAs.getItems().addAll(ds.getUsernames());
+        loginAs.getItems().addAll(dbService.getUsernames());
         loginAs.getItems().add(NEW_USER);
     }
 
@@ -144,7 +144,7 @@ public class MainController implements Initializable {
             } else {
                 network.interruptThread();
                 network.connect();
-                List<String> loginPass = ds.getLoginPass(loginAs.getSelectionModel().getSelectedItem());
+                List<String> loginPass = dbService.getLoginPass(loginAs.getSelectionModel().getSelectedItem());
                 network.sendAuthMessage(loginPass.get(0), loginPass.get(1).toCharArray());
                 rememberMeMenuItem.setSelected(true);
             }
@@ -567,7 +567,7 @@ public class MainController implements Initializable {
     private void reconnect() {
         network.interruptThread();
         network.connect();
-        List<String> loginPass = ds.getLoginPass(username);
+        List<String> loginPass = dbService.getLoginPass(username);
         network.sendAuthMessage(loginPass.get(0), loginPass.get(1).toCharArray());
     }
 
@@ -575,7 +575,7 @@ public class MainController implements Initializable {
         String name = getNewNameFromDialog("Enter new name", "Change nick", "New name:");
         if (!name.isBlank()) {
             if (rememberMeMenuItem.isSelected()) {
-                ds.changeUsername(name, username);
+                dbService.changeUsername(name, username);
             }
             network.sendChangeUsername(name);
             fillLoginAsCombo();
@@ -597,8 +597,8 @@ public class MainController implements Initializable {
         serverListView.requestFocus();
     }
 
-    public DBService getDs() {
-        return ds;
+    public DBService getDbService() {
+        return dbService;
     }
 
     public void setUsername(String username) {
@@ -606,7 +606,7 @@ public class MainController implements Initializable {
     }
 
     public void addNewUser(String login, char[] password) {
-        ds.addNewUser(username, login, password);
+        dbService.addNewUser(username, login, password);
         showAlert(username + " remembered", Alert.AlertType.INFORMATION);
         fillLoginAsCombo();
         loginAs.getSelectionModel().select(username);

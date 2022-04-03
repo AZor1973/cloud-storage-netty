@@ -127,7 +127,7 @@ public class Network {
             if (App.INSTANCE.getAuthStage().isShowing() && App.INSTANCE.getAuthController().rememberMe.isSelected()) {
                 String login = App.INSTANCE.getAuthController().getLoginField().getText();
                 char[] pass = App.INSTANCE.getAuthController().getPasswordField().getText().toCharArray();
-                App.INSTANCE.getMainController().getDs().addNewUser(username, login, pass);
+                App.INSTANCE.getMainController().getDbService().addNewUser(username, login, pass);
             }
             Platform.runLater(() -> {
                 App.INSTANCE.switchToMainWindow(username);
