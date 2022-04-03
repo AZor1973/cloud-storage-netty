@@ -54,7 +54,7 @@ public class MainController implements Initializable {
     private static final int BUFFER_SIZE = 8192;
     private static final String WARN_RESOURCE = "com/geekbrains/client/warn.css";
     private static final String INFO_RESOURCE = "com/geekbrains/client/info.css";
-    private static final String RECONNECT_STRING = "SERVER: OFF. Reconnect?";
+    private static final String CONNECTION_DISABLED_STRING = "SERVER: OFF. Reconnect?";
     private static final String NEW_USER = "New user";
     private Network network;
     private DBService dbService;
@@ -550,7 +550,7 @@ public class MainController implements Initializable {
     }
 
     public void connectLost() throws IOException, InterruptedException {
-        connectLabel.setText(RECONNECT_STRING);
+        connectLabel.setText(CONNECTION_DISABLED_STRING);
         log.warn("Connection lost");
         if (showAlert("Connection lost. Reconnect?", Alert.AlertType.CONFIRMATION)) {
             reconnect();
@@ -558,7 +558,7 @@ public class MainController implements Initializable {
     }
 
     public void labelReconnect(MouseEvent mouseEvent) {
-        if (mouseEvent.getClickCount() == 2 && connectLabel.getText().equals(RECONNECT_STRING)) {
+        if (mouseEvent.getClickCount() == 2 && connectLabel.getText().equals(CONNECTION_DISABLED_STRING)) {
             reconnect();
         }
     }

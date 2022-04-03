@@ -20,6 +20,7 @@ public class Network {
 
     private static final int SERVER_PORT = 8189;
     private static final String SERVER_HOST = "localhost";
+    private static final String CONNECTION_ESTABLISHED_STRING = "SERVER: ON";
     private static Network INSTANCE;
     private final String host;
     private final int port;
@@ -131,7 +132,7 @@ public class Network {
             }
             Platform.runLater(() -> {
                 App.INSTANCE.switchToMainWindow(username);
-                App.INSTANCE.getMainController().connectLabel.setText("SERVER: ON");
+                App.INSTANCE.getMainController().connectLabel.setText(CONNECTION_ESTABLISHED_STRING);
                 App.INSTANCE.getMainController().showAlert("You are signed in as " + username, Alert.AlertType.INFORMATION);
                 App.INSTANCE.getMainController().selectLoginAsCombo(username);
             });
