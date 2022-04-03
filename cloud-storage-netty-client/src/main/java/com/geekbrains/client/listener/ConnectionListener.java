@@ -5,7 +5,7 @@ import com.geekbrains.client.MainController;
 import com.geekbrains.client.Network;
 import javafx.application.Platform;
 
-public class ConnectionListener {
+public class ConnectionListener implements Listener{
 
     public ConnectionListener(Event event) {
         event.registerConnectionListener(this);
