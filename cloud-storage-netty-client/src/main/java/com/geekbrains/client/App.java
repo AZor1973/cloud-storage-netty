@@ -85,23 +85,23 @@ public class App extends Application {
     }
 
     // для доступа к контроллеру из класса Network
-    MainController getMainController() {
+    public MainController getMainController() {
         return mainLoader.getController();
     }
 
-    AuthController getAuthController() {
+    public AuthController getAuthController() {
         return authLoader.getController();
     }
 
-    RegController getRegController() {
+    public RegController getRegController() {
         return regLoader.getController();
     }
 
-    Stage getRegStage() {
+    public Stage getRegStage() {
         return regStage;
     }
 
-    Stage getAuthStage() {
+    public Stage getAuthStage() {
         return authStage;
     }
 
